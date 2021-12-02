@@ -5,7 +5,7 @@ plugins {
     id("net.blueberrymc.blueberryFarm") version("1.0.1-SNAPSHOT") // https://github.com/BlueberryMC/BlueberryFarm
 }
 
-group = "net.blueberrymc.example"
+group = "xyz.acrylicstyle.multiVersion"
 version = "0.0.1"
 
 tasks.withType<JavaExec>().configureEach {
@@ -37,4 +37,10 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks {
+    withType<JavaCompile> {
+        options.encoding = "UTF-8"
+    }
 }

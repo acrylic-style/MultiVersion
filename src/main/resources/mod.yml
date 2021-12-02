@@ -1,4 +1,4 @@
-id: examplemod
-name: ExampleMod
+id: multiversion
+name: MultiVersion
 version: 0.0.1
-main: net.blueberrymc.example.ExampleMod
+main: xyz.acrylicstyle.multiVersion.MultiVersion
