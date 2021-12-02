@@ -1,0 +1,4 @@
+id: examplemod
+name: ExampleMod
+version: 0.0.1
+main: net.blueberrymc.example.ExampleMod
