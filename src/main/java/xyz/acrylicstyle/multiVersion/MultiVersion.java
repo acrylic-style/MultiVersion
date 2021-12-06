@@ -18,6 +18,7 @@ public class MultiVersion extends BlueberryMod implements Listener {
     @Override
     public void onPreInit() {
         Blueberry.getEventManager().registerEvents(this, this);
+        onReload();
         setVisualConfig(VisualConfigManager.createFromClass(MultiVersionConfig.class));
         this.getVisualConfig().onSave(this::saveConfig);
     }
@@ -30,6 +31,18 @@ public class MultiVersion extends BlueberryMod implements Listener {
         } catch (IOException ex) {
             this.getLogger().error("Could not save configuration", ex);
         }
+        onReload();
+    }
+
+    @Override
+    public boolean onReload() {
+        try {
+            getConfig().reloadConfig();
+        } catch (IOException e) {
+            getLogger().warn("Failed to reload MultiVersion config", e);
+        }
+        VisualConfigManager.load(getConfig(), MultiVersionConfig.class);
+        return false;
     }
 
     @EventHandler

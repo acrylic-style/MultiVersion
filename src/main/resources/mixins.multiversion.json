@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "xyz.acrylicstyle.multiVersion.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8.5",
+  "client": [
+    "MixinDebugScreenOverlay",
+    "MixinServerData"
+  ]
+}

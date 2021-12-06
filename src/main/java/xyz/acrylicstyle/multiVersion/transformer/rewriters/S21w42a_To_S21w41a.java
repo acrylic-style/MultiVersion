@@ -83,10 +83,10 @@ public class S21w42a_To_S21w41a extends S21w43a_To_S21w42a {
         // -------------------------- | --------------------------
         //   0 AMBIENT_ENTITY_EFFECT  |   0 AMBIENT_ENTITY_EFFECT
         //   1 ANGRY_VILLAGER         |   1 ANGRY_VILLAGER
-        // - 2 BARRIER -------┐       |
-        // - 3 LIGHT ---------|       |
+        // - 2 BARRIER -------+       |
+        // - 3 LIGHT ---------+       |
         //   4 BLOCK          |       |   2 BLOCK
-        //                    └-----> | + 3 BLOCK_MARKER
+        //                    +-----> | + 3 BLOCK_MARKER
         //   5 BUBBLE                 |   4 BUBBLE
         //
         if (particleId == 2) {

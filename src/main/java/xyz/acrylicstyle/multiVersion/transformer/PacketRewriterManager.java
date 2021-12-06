@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
 // this is not implemented for the server
 public class PacketRewriterManager {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final List<xyz.acrylicstyle.multiVersion.transformer.PacketRewriter> REWRITER_LIST = new ArrayList<>();
+    private static final List<PacketRewriter> REWRITER_LIST = new ArrayList<>();
 
     static {
         register();
@@ -41,38 +41,38 @@ public class PacketRewriterManager {
         REWRITER_LIST.add(new v1_17_1_To_v1_17());
         REWRITER_LIST.add(new S21w37a_To_v1_17_1());
         REWRITER_LIST.add(new S21w38a_To_S21w37a());
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_21W39A, TransformableProtocolVersions.SNAPSHOT_21W38A));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_21W39A, TransformableProtocolVersions.SNAPSHOT_21W38A));
         REWRITER_LIST.add(new S21w40a_To_S21w39a());
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_21W41A, TransformableProtocolVersions.SNAPSHOT_21W40A));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_21W41A, TransformableProtocolVersions.SNAPSHOT_21W40A));
         REWRITER_LIST.add(new S21w42a_To_S21w41a());
         REWRITER_LIST.add(new S21w43a_To_S21w42a());
         REWRITER_LIST.add(new S21w44a_To_S21w43a());
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE1, TransformableProtocolVersions.SNAPSHOT_21W44A));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE2, TransformableProtocolVersions.v1_18_PRE1));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE3, TransformableProtocolVersions.v1_18_PRE2));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE4, TransformableProtocolVersions.v1_18_PRE3));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE1, TransformableProtocolVersions.SNAPSHOT_21W44A));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE2, TransformableProtocolVersions.v1_18_PRE1));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE3, TransformableProtocolVersions.v1_18_PRE2));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE4, TransformableProtocolVersions.v1_18_PRE3));
         REWRITER_LIST.add(new v1_18_Pre5_To_v1_18_Pre4());
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE6, TransformableProtocolVersions.v1_18_PRE5));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE7, TransformableProtocolVersions.v1_18_PRE6));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE8, TransformableProtocolVersions.v1_18_PRE7));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_RC1, TransformableProtocolVersions.v1_18_PRE8));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_RC2, TransformableProtocolVersions.v1_18_RC1));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_RC3, TransformableProtocolVersions.v1_18_RC2));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18_RC4, TransformableProtocolVersions.v1_18_RC3));
-        REWRITER_LIST.add(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter.of(TransformableProtocolVersions.v1_18, TransformableProtocolVersions.v1_18_RC4));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE6, TransformableProtocolVersions.v1_18_PRE5));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE7, TransformableProtocolVersions.v1_18_PRE6));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_PRE8, TransformableProtocolVersions.v1_18_PRE7));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_RC1, TransformableProtocolVersions.v1_18_PRE8));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_RC2, TransformableProtocolVersions.v1_18_RC1));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_RC3, TransformableProtocolVersions.v1_18_RC2));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_RC4, TransformableProtocolVersions.v1_18_RC3));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18, TransformableProtocolVersions.v1_18_RC4));
         var list = new ArrayList<>(REWRITER_LIST);
         Collections.reverse(list);
-        list.forEach(xyz.acrylicstyle.multiVersion.transformer.PacketRewriter::register);
+        list.forEach(PacketRewriter::register);
     }
 
     @NotNull
-    public static List<xyz.acrylicstyle.multiVersion.transformer.PacketRewriter> collectRewriters(int targetPV, boolean flip) throws NoSuchElementException {
+    public static List<PacketRewriter> collectRewriters(int targetPV, boolean flip) throws NoSuchElementException {
         return collectRewriters(REWRITER_LIST.get(REWRITER_LIST.size() - 1).getSourcePV(), targetPV, flip);
     }
 
     @NotNull
-    public static List<xyz.acrylicstyle.multiVersion.transformer.PacketRewriter> collectRewriters(int sourcePV, int targetPV, boolean flip) throws NoSuchElementException {
-        xyz.acrylicstyle.multiVersion.transformer.PacketRewriter source = REWRITER_LIST.stream()
+    public static List<PacketRewriter> collectRewriters(int sourcePV, int targetPV, boolean flip) throws NoSuchElementException {
+        PacketRewriter source = REWRITER_LIST.stream()
                 .filter(rewriter -> rewriter.getSourcePV() == sourcePV)
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("No packet rewriter set for " + sourcePV + " (source)"));
@@ -82,12 +82,12 @@ public class PacketRewriterManager {
         if (source.getTargetPV() == targetPV) {
             return Collections.singletonList(REWRITER_LIST.get(REWRITER_LIST.size() - 1));
         }
-        xyz.acrylicstyle.multiVersion.transformer.PacketRewriter entry = REWRITER_LIST.stream()
+        PacketRewriter entry = REWRITER_LIST.stream()
                 .filter(rewriter -> rewriter.getTargetPV() == targetPV)
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("No packet rewriter set for " + targetPV + " (target)"));
         int index = REWRITER_LIST.indexOf(entry);
-        List<xyz.acrylicstyle.multiVersion.transformer.PacketRewriter> rewriterList = new ArrayList<>();
+        List<PacketRewriter> rewriterList = new ArrayList<>();
         for (int i = index; i <= REWRITER_LIST.indexOf(source); i++) {
             rewriterList.add(REWRITER_LIST.get(i));
         }
@@ -105,7 +105,7 @@ public class PacketRewriterManager {
         int currentPV = targetPV;
         FriendlyByteBuf write = new FriendlyByteBuf(Unpooled.buffer());
         ObjectList<ByteBuf> packets = new ObjectArrayList<>();
-        for (xyz.acrylicstyle.multiVersion.transformer.PacketRewriter rewriter : collectRewriters(targetPV, false)) {
+        for (PacketRewriter rewriter : collectRewriters(targetPV, false)) {
             if (currentPV != rewriter.getTargetPV()) {
                 throw new IllegalStateException("currentPV (" + currentPV + ") != targetPV (" + rewriter.getTargetPV() + ")");
             }
@@ -145,7 +145,7 @@ public class PacketRewriterManager {
         int currentPV = SharedConstants.getProtocolVersion();
         FriendlyByteBuf write = new FriendlyByteBuf(Unpooled.buffer());
         ObjectList<ByteBuf> packets = new ObjectArrayList<>();
-        for (xyz.acrylicstyle.multiVersion.transformer.PacketRewriter rewriter : collectRewriters(targetPV, true)) {
+        for (PacketRewriter rewriter : collectRewriters(targetPV, true)) {
             if (currentPV != rewriter.getSourcePV()) {
                 throw new IllegalStateException("currentPV (" + currentPV + ") != sourcePV (" + rewriter.getSourcePV() + ")");
             }
@@ -174,21 +174,21 @@ public class PacketRewriterManager {
     }
 
     public static int remapInboundPacketId(@NotNull ConnectionProtocol protocol, int packetId, int sourcePV, int targetPV) {
-        for (xyz.acrylicstyle.multiVersion.transformer.PacketRewriter rewriter : collectRewriters(sourcePV, targetPV, false)) {
+        for (PacketRewriter rewriter : collectRewriters(sourcePV, targetPV, false)) {
             packetId = rewriter.getInboundId(protocol, packetId);
         }
         return packetId;
     }
 
     public static int remapInboundPacketId(@NotNull ConnectionProtocol protocol, int packetId, int targetPV) {
-        for (xyz.acrylicstyle.multiVersion.transformer.PacketRewriter rewriter : collectRewriters(targetPV, false)) {
+        for (PacketRewriter rewriter : collectRewriters(targetPV, false)) {
             packetId = rewriter.getInboundId(protocol, packetId);
         }
         return packetId;
     }
 
     public static int remapOutboundPacketId(@NotNull ConnectionProtocol protocol, int packetId, int sourcePV, int targetPV) {
-        for (xyz.acrylicstyle.multiVersion.transformer.PacketRewriter rewriter : collectRewriters(sourcePV, targetPV, true)) {
+        for (PacketRewriter rewriter : collectRewriters(sourcePV, targetPV, true)) {
             packetId = rewriter.getOutboundId(protocol, packetId);
         }
         return packetId;
