@@ -2,7 +2,7 @@ import net.blueberrymc.blueberryFarm.blueberry
 
 plugins {
     java
-    id("net.blueberrymc.blueberryFarm") version("1.0.3-SNAPSHOT") // https://github.com/BlueberryMC/BlueberryFarm
+    id("net.blueberrymc.blueberryFarm") version("1.0.4-SNAPSHOT") // https://github.com/BlueberryMC/BlueberryFarm
 }
 
 group = "xyz.acrylicstyle.multiVersion"
@@ -19,13 +19,14 @@ java {
 }
 
 blueberry {
-    minecraftVersion.set("1.18")
-    apiVersion.set("0.1.0")
+    minecraftVersion.set("1.18.1")
+    apiVersion.set("0.2.1-SNAPSHOT")
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url = uri("https://repo.blueberrymc.net/repository/maven-public/") }
     maven { url = uri("https://repo2.acrylicstyle.xyz/") }
     maven { url = uri("https://repo.spongepowered.org/maven") }
 }
