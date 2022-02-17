@@ -2,7 +2,7 @@ package xyz.acrylicstyle.multiVersion.transformer.rewriters;
 
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagCollection;
+import net.minecraft.tags.TagNetworkSerialization;
 import org.jetbrains.annotations.NotNull;
 import xyz.acrylicstyle.multiVersion.transformer.TransformableProtocolVersions;
 
@@ -23,7 +23,7 @@ public class S21w43a_To_S21w42a extends S21w44a_To_S21w43a {
     public void registerInbound() {
         // ClientboundUpdateTagsPacket
         rewriteInbound(ConnectionProtocol.PLAY, 0x67, wrapper -> {
-            var tags = wrapper.readMap((buf) -> ResourceKey.createRegistryKey(buf.readResourceLocation()), TagCollection.NetworkPayload::read);
+            var tags = wrapper.readMap((buf) -> ResourceKey.createRegistryKey(buf.readResourceLocation()), TagNetworkSerialization.NetworkPayload::read);
             wrapper.writeVarInt(tags.size());
             tags.forEach((key, value) -> {
                 wrapper.writeResourceLocation(key.location());

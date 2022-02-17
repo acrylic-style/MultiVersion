@@ -23,7 +23,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagCollection;
+import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
@@ -32,20 +32,26 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 // new -> old
 public class PacketRewriter {
+    /**
+     * @deprecated Should only be used for debugging
+     */
+    @Deprecated
     protected static final Logger LOGGER = LogManager.getLogger();
     private final int sourcePV;
     private final int targetPV;
     private final Int2ObjectMap<Int2IntMap> remapInbounds = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectMap<Int2IntMap> remapOutbounds = new Int2ObjectOpenHashMap<>();
-    private final Int2ObjectMap<Int2ObjectMap<ObjectArrayList<Consumer<PacketWrapper>>>> rewriteInbounds = new Int2ObjectOpenHashMap<>();
-    private final Int2ObjectMap<Int2ObjectMap<ObjectArrayList<Consumer<PacketWrapper>>>> rewriteOutbounds = new Int2ObjectOpenHashMap<>();
-    private final ThreadLocal<Stack<ObjectList<ByteBuf>>> writtenPackets = ThreadLocal.withInitial(ObjectArrayList::new);
+    // Map<ConnectionProtocol, Map<packet_id, List<packet_rewriter>>
+    private final Int2ObjectMap<Int2ObjectMap<List<PacketConsumer>>> rewriteInbounds = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectMap<Int2ObjectMap<List<PacketConsumer>>> rewriteOutbounds = new Int2ObjectOpenHashMap<>();
+    private final ThreadLocal<Stack<List<ByteBuf>>> writtenPackets = ThreadLocal.withInitial(ObjectArrayList::new);
     private boolean registeringInbound;
     private boolean registeringOutbound;
 
@@ -222,17 +228,17 @@ public class PacketRewriter {
         return remapOutbounds.get(protocol.ordinal()).getOrDefault(newId, newId);
     }
 
-    protected final void rewriteInbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull Consumer<PacketWrapper> handler) {
+    protected final void rewriteInbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketConsumer handler) {
         if (!registeringInbound) throw new IllegalStateException("Not registering inbound");
         internalRewrite(rewriteInbounds, protocol, oldId, handler);
     }
 
-    protected final void rewriteOutbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull Consumer<PacketWrapper> handler) {
+    protected final void rewriteOutbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketConsumer handler) {
         if (!registeringOutbound) throw new IllegalStateException("Not registering outbound");
         internalRewrite(rewriteOutbounds, protocol, oldId, handler);
     }
 
-    protected final void internalRewrite(@NotNull Int2ObjectMap<Int2ObjectMap<ObjectArrayList<Consumer<PacketWrapper>>>> map, @NotNull ConnectionProtocol protocol, int oldId, @NotNull Consumer<PacketWrapper> handler) {
+    protected final void internalRewrite(@NotNull Int2ObjectMap<Int2ObjectMap<List<PacketConsumer>>> map, @NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketConsumer handler) {
         map.computeIfAbsent(protocol.ordinal(), (k) -> new Int2ObjectOpenHashMap<>(4))
                 .computeIfAbsent(oldId, (k) -> new ObjectArrayList<>())
                 .add(handler);
@@ -253,32 +259,32 @@ public class PacketRewriter {
     }
 
     @NotNull
-    public final ObjectList<ByteBuf> doRewriteInbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketWrapper wrapper) {
+    public final List<ByteBuf> doRewriteInbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketWrapper wrapper) {
         PacketWrapperRewriter packetWrapperRewriter = new PacketWrapperRewriter(wrapper, this::rewriteInboundItemData);
         return doRewrite(protocol, oldId, packetWrapperRewriter, rewriteInbounds);
     }
 
     @NotNull
-    public final ObjectList<ByteBuf> doRewriteOutbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketWrapper wrapper) {
+    public final List<ByteBuf> doRewriteOutbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketWrapper wrapper) {
         PacketWrapperRewriter packetWrapperRewriter = new PacketWrapperRewriter(wrapper, this::rewriteOutboundItemData);
         return doRewrite(protocol, oldId, packetWrapperRewriter, rewriteOutbounds);
     }
 
     @NotNull
-    private ObjectList<ByteBuf> doRewrite(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketWrapper wrapper, Int2ObjectMap<Int2ObjectMap<ObjectArrayList<Consumer<PacketWrapper>>>> map) {
+    private List<ByteBuf> doRewrite(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketWrapper wrapper, Int2ObjectMap<Int2ObjectMap<List<PacketConsumer>>> map) {
         if (!map.containsKey(protocol.ordinal())) {
             wrapper.passthroughAll();
             return ObjectList.of();
         }
-        Collection<Consumer<PacketWrapper>> consumers = map.get(protocol.ordinal()).get(oldId);
+        Collection<PacketConsumer> consumers = map.get(protocol.ordinal()).get(oldId);
         if (consumers == null || consumers.isEmpty()) {
             wrapper.passthroughAll();
             return ObjectList.of();
         }
         writtenPackets.get().push(new ObjectArrayList<>());
-        ObjectList<ByteBuf> list;
+        List<ByteBuf> list;
         try {
-            for (Consumer<PacketWrapper> consumer : consumers) {
+            for (PacketConsumer consumer : consumers) {
                 consumer.accept(wrapper);
             }
         } finally {
@@ -289,9 +295,9 @@ public class PacketRewriter {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public final Map<ResourceLocation, IntList> getTags(@NotNull TagCollection.NetworkPayload networkPayload) {
+    public final Map<ResourceLocation, IntList> getTags(@NotNull TagNetworkSerialization.NetworkPayload networkPayload) {
         try {
-            Field f = TagCollection.NetworkPayload.class.getDeclaredField("tags");
+            Field f = TagNetworkSerialization.NetworkPayload.class.getDeclaredField("tags");
             f.setAccessible(true);
             return (Map<ResourceLocation, IntList>) f.get(networkPayload);
         } catch (ReflectiveOperationException ex) {
@@ -299,21 +305,21 @@ public class PacketRewriter {
         }
     }
 
-    public final void addEmptyTags(@NotNull TagCollection.NetworkPayload networkPayload, @NotNull ResourceLocation@NotNull... locations) {
+    public final void addEmptyTags(@NotNull TagNetworkSerialization.NetworkPayload networkPayload, @NotNull ResourceLocation@NotNull... locations) {
         Map<ResourceLocation, IntList> map = getTags(networkPayload);
         for (ResourceLocation location : locations) {
             map.put(location, IntLists.emptyList());
         }
     }
 
-    public final void addEmptyTags(@NotNull TagCollection.NetworkPayload networkPayload, @NotNull String@NotNull... locations) {
+    public final void addEmptyTags(@NotNull TagNetworkSerialization.NetworkPayload networkPayload, @NotNull String@NotNull... locations) {
         Map<ResourceLocation, IntList> map = getTags(networkPayload);
         for (String location : locations) {
             map.put(new ResourceLocation(location), IntLists.emptyList());
         }
     }
 
-    public final void addTags(@NotNull TagCollection.NetworkPayload networkPayload, @NotNull String location, int@NotNull... ids) {
+    public final void addTags(@NotNull TagNetworkSerialization.NetworkPayload networkPayload, @NotNull String location, int@NotNull... ids) {
         Map<ResourceLocation, IntList> map = getTags(networkPayload);
         map.put(new ResourceLocation(location), IntList.of(ids));
     }

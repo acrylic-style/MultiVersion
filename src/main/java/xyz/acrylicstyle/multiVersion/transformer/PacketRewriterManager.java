@@ -16,6 +16,7 @@ import xyz.acrylicstyle.multiVersion.transformer.rewriters.S21w40a_To_S21w39a;
 import xyz.acrylicstyle.multiVersion.transformer.rewriters.S21w42a_To_S21w41a;
 import xyz.acrylicstyle.multiVersion.transformer.rewriters.S21w43a_To_S21w42a;
 import xyz.acrylicstyle.multiVersion.transformer.rewriters.S21w44a_To_S21w43a;
+import xyz.acrylicstyle.multiVersion.transformer.rewriters.S22w06a_To_S22w05a;
 import xyz.acrylicstyle.multiVersion.transformer.rewriters.v1_17_1_To_v1_17;
 import xyz.acrylicstyle.multiVersion.transformer.rewriters.v1_17_To_v1_16_5;
 import xyz.acrylicstyle.multiVersion.transformer.rewriters.v1_18_Pre5_To_v1_18_Pre4;
@@ -60,6 +61,10 @@ public class PacketRewriterManager {
         REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_RC3, TransformableProtocolVersions.v1_18_RC2));
         REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18_RC4, TransformableProtocolVersions.v1_18_RC3));
         REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.v1_18, TransformableProtocolVersions.v1_18_RC4));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_22W03A, TransformableProtocolVersions.v1_18));
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_22W05A, TransformableProtocolVersions.SNAPSHOT_22W03A));
+        REWRITER_LIST.add(new S22w06a_To_S22w05a());
+        REWRITER_LIST.add(PacketRewriter.of(TransformableProtocolVersions.SNAPSHOT_22W07A, TransformableProtocolVersions.SNAPSHOT_22W06A));
         var list = new ArrayList<>(REWRITER_LIST);
         Collections.reverse(list);
         list.forEach(PacketRewriter::register);
@@ -97,6 +102,7 @@ public class PacketRewriterManager {
 
     @NotNull
     public static List<ByteBuf> rewriteInbound(@NotNull ConnectionProtocol protocol, @NotNull ByteBuf byteBuf, int targetPV) {
+        // server PV -> client PV
         FriendlyByteBuf read = new FriendlyByteBuf(Unpooled.buffer());
         read.writeBytes(byteBuf, byteBuf.readerIndex(), byteBuf.readableBytes());
         int packetId = read.readVarInt();
@@ -105,12 +111,13 @@ public class PacketRewriterManager {
         int currentPV = targetPV;
         FriendlyByteBuf write = new FriendlyByteBuf(Unpooled.buffer());
         ObjectList<ByteBuf> packets = new ObjectArrayList<>();
-        for (PacketRewriter rewriter : collectRewriters(targetPV, false)) {
+        for (PacketRewriter rewriter : collectRewriters(SharedConstants.getProtocolVersion(), targetPV, false)) {
             if (currentPV != rewriter.getTargetPV()) {
                 throw new IllegalStateException("currentPV (" + currentPV + ") != targetPV (" + rewriter.getTargetPV() + ")");
             }
             packetId = rewriter.getInboundId(protocol, packetId);
             read.readerIndex(readerIndex);
+            // write new packet id
             write.writeVarInt(packetId);
             try {
                 PacketWrapper pw = new PacketWrapper(read, write);
@@ -120,12 +127,16 @@ public class PacketRewriterManager {
                 LOGGER.error("Failed to rewrite inbound packet in " + rewriter.getClass().getTypeName(), e);
                 throw e;
             }
+            // release read buffer
             read.release();
+            // swap read buffer with current write buffer
             read = write;
+            // create new write buffer
             write = new FriendlyByteBuf(Unpooled.buffer());
             // set currentPV to source (newer) PV of current rewriter
             currentPV = rewriter.getSourcePV();
         }
+        // release write buffer
         write.release();
         if (currentPV != SharedConstants.getProtocolVersion()) {
             throw new IllegalStateException("currentPV (" + currentPV + ") != client PV (" + SharedConstants.getProtocolVersion() + ")");
@@ -137,6 +148,7 @@ public class PacketRewriterManager {
 
     @NotNull
     public static List<ByteBuf> rewriteOutbound(@NotNull ConnectionProtocol protocol, @NotNull ByteBuf byteBuf, int targetPV) {
+        // client PV -> server PV
         FriendlyByteBuf read = new FriendlyByteBuf(Unpooled.buffer());
         read.writeBytes(byteBuf, byteBuf.readerIndex(), byteBuf.readableBytes());
         int packetId = read.readVarInt();
@@ -145,12 +157,13 @@ public class PacketRewriterManager {
         int currentPV = SharedConstants.getProtocolVersion();
         FriendlyByteBuf write = new FriendlyByteBuf(Unpooled.buffer());
         ObjectList<ByteBuf> packets = new ObjectArrayList<>();
-        for (PacketRewriter rewriter : collectRewriters(targetPV, true)) {
+        for (PacketRewriter rewriter : collectRewriters(SharedConstants.getProtocolVersion(), targetPV, true)) {
             if (currentPV != rewriter.getSourcePV()) {
                 throw new IllegalStateException("currentPV (" + currentPV + ") != sourcePV (" + rewriter.getSourcePV() + ")");
             }
             packetId = rewriter.getOutboundId(protocol, packetId);
             read.readerIndex(readerIndex);
+            // write new packet id
             write.writeVarInt(packetId);
             try {
                 PacketWrapper pw = new PacketWrapper(read, write);
@@ -160,8 +173,11 @@ public class PacketRewriterManager {
                 LOGGER.error("Failed to rewrite outbound packet in " + rewriter.getClass().getTypeName(), e);
                 throw e;
             }
+            // release read buffer
             read.release();
+            // swap read buffer with current write buffer
             read = write;
+            // create new write buffer
             write = new FriendlyByteBuf(Unpooled.buffer());
             // set currentPV to target PV of current rewriter
             currentPV = rewriter.getTargetPV();
@@ -181,7 +197,7 @@ public class PacketRewriterManager {
     }
 
     public static int remapInboundPacketId(@NotNull ConnectionProtocol protocol, int packetId, int targetPV) {
-        for (PacketRewriter rewriter : collectRewriters(targetPV, false)) {
+        for (PacketRewriter rewriter : collectRewriters(SharedConstants.getProtocolVersion(), targetPV, false)) {
             packetId = rewriter.getInboundId(protocol, packetId);
         }
         return packetId;
@@ -195,7 +211,7 @@ public class PacketRewriterManager {
     }
 
     public static int remapOutboundPacketId(@NotNull ConnectionProtocol protocol, int packetId, int targetPV) {
-        for (PacketRewriter rewriter : collectRewriters(targetPV, true)) {
+        for (PacketRewriter rewriter : collectRewriters(SharedConstants.getProtocolVersion(), targetPV, true)) {
             packetId = rewriter.getOutboundId(protocol, packetId);
         }
         return packetId;

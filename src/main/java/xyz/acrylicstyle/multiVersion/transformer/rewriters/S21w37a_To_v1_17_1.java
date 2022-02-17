@@ -5,14 +5,13 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.blueberrymc.util.CompactArrayUtil;
 import net.blueberrymc.util.IntPair;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagCollection;
+import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import xyz.acrylicstyle.multiVersion.transformer.PacketWrapper;
 import xyz.acrylicstyle.multiVersion.transformer.TransformableProtocolVersions;
+import xyz.acrylicstyle.multiVersion.util.CompactArrayUtil;
 
 import java.util.BitSet;
 import java.util.Map;
@@ -196,7 +196,7 @@ public class S21w37a_To_v1_17_1 extends S21w40a_To_S21w39a {
         });
         // ClientboundUpdateTagsPacket
         rewriteInbound(ConnectionProtocol.PLAY, 0x66, wrapper -> {
-            var tags = wrapper.readMap((buf) -> ResourceKey.createRegistryKey(buf.readResourceLocation()), TagCollection.NetworkPayload::read);
+            var tags = wrapper.readMap((buf) -> ResourceKey.createRegistryKey(buf.readResourceLocation()), TagNetworkSerialization.NetworkPayload::read);
             wrapper.writeVarInt(tags.size());
             tags.forEach((key, value) -> {
                 wrapper.writeResourceLocation(key.location());
@@ -234,7 +234,7 @@ public class S21w37a_To_v1_17_1 extends S21w40a_To_S21w39a {
         }
     }
 
-    private static record ChunkLightData(boolean trustEdges, @NotNull BitSet slm, @NotNull BitSet blm, @NotNull BitSet eslm, @NotNull BitSet eblm, byte[][] sl, byte[][] bl) {
+    private record ChunkLightData(boolean trustEdges, @NotNull BitSet slm, @NotNull BitSet blm, @NotNull BitSet eslm, @NotNull BitSet eblm, byte[][] sl, byte[][] bl) {
         @NotNull
         public static ChunkLightData passthrough(@NotNull PacketWrapper wrapper) {
             boolean trustEdges = wrapper.passthroughBoolean();
@@ -304,7 +304,7 @@ public class S21w37a_To_v1_17_1 extends S21w40a_To_S21w39a {
         }
     }
 
-    public static record DataPalettes(@NotNull DataPaletteType type, int globalPaletteBits) {
+    public record DataPalettes(@NotNull DataPaletteType type, int globalPaletteBits) {
         @NotNull
         public DataPalette readPalette(@NotNull PacketWrapper wrapper) {
             int bitsPerValue = wrapper.readByte();

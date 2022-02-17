@@ -1,13 +1,12 @@
 package xyz.acrylicstyle.multiVersion.transformer.rewriters;
 
-import xyz.acrylicstyle.multiVersion.transformer.PacketRewriter;
 import xyz.acrylicstyle.multiVersion.transformer.TransformableProtocolVersions;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagCollection;
+import net.minecraft.tags.TagNetworkSerialization;
 import org.jetbrains.annotations.NotNull;
 
-public class v1_18_Pre5_To_v1_18_Pre4 extends PacketRewriter {
+public class v1_18_Pre5_To_v1_18_Pre4 extends S22w06a_To_S22w05a {
     public v1_18_Pre5_To_v1_18_Pre4() {
         this(TransformableProtocolVersions.v1_18_PRE5, TransformableProtocolVersions.v1_18_PRE4);
     }
@@ -20,7 +19,7 @@ public class v1_18_Pre5_To_v1_18_Pre4 extends PacketRewriter {
     public void registerInbound() {
         // ClientboundUpdateTagsPacket
         rewriteInbound(ConnectionProtocol.PLAY, 0x67, wrapper -> {
-            var tags = wrapper.readMap((buf) -> ResourceKey.createRegistryKey(buf.readResourceLocation()), TagCollection.NetworkPayload::read);
+            var tags = wrapper.readMap((buf) -> ResourceKey.createRegistryKey(buf.readResourceLocation()), TagNetworkSerialization.NetworkPayload::read);
             wrapper.writeVarInt(tags.size());
             tags.forEach((key, value) -> {
                 wrapper.writeResourceLocation(key.location());

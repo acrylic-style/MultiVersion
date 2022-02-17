@@ -88,7 +88,7 @@ public class v1_17_To_v1_16_5 extends v1_17_1_To_v1_17 {
         // + 0x35: Death Combat Event
         remapInbound(ConnectionProtocol.PLAY, 0x32, 0x36); // Player Info
         remapInbound(ConnectionProtocol.PLAY, 0x33, 0x37); // Face Player
-        // - 0x36: Destroy Entities -> 0x3a Destroy Entity
+        // - 0x36: Destroy Entities -> 0x3A Destroy Entity
         remapInbound(ConnectionProtocol.PLAY, 0x34, 0x38); // Player Position And Look
         remapInbound(ConnectionProtocol.PLAY, 0x35, 0x39); // Unlock Recipes
         // + 0x3A: Destroy Entity <- 0x36 Destroy Entities

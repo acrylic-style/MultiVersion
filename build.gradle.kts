@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.multiVersion"
-version = "0.0.2"
+version = "1.0.0"
 
 tasks.withType<JavaExec>().configureEach {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
@@ -19,16 +19,14 @@ java {
 }
 
 blueberry {
-    minecraftVersion.set("1.18.1")
-    apiVersion.set("0.2.1-SNAPSHOT")
+    minecraftVersion.set("22w06a")
+    apiVersion.set("1.0.0-SNAPSHOT")
 }
 
 repositories {
-    mavenLocal()
+    // mavenLocal()
     mavenCentral()
     maven { url = uri("https://repo.blueberrymc.net/repository/maven-public/") }
-    maven { url = uri("https://repo2.acrylicstyle.xyz/") }
-    maven { url = uri("https://repo.spongepowered.org/maven") }
 }
 
 dependencies {
