@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.multiVersion"
-version = "1.0.0"
+version = "1.0.1"
 
 tasks.withType<JavaExec>().configureEach {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
@@ -31,6 +31,7 @@ repositories {
 
 dependencies {
     blueberry()
+    implementation("com.mojang:logging:1.0.0")
 }
 
 tasks {

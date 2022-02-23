@@ -4,6 +4,8 @@ import net.blueberrymc.util.NameGetter;
 import org.jetbrains.annotations.NotNull;
 
 public enum TransformableProtocolVersions implements NameGetter {
+    v1_18_2_PRE2("1.18.2 pre2", 0x40000047),
+    v1_18_2_PRE1("1.18.2 pre1", 0x40000046),
     SNAPSHOT_22W07A("22w07a", 0x40000044),
     SNAPSHOT_22W06A("22w06a", 0x40000043),
     SNAPSHOT_22W05A("22w05a", 0x40000042),
