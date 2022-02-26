@@ -1,5 +1,5 @@
 id: multiversion
 name: MultiVersion
-version: 1.0.0
+version: 1.0.3
 main: xyz.acrylicstyle.multiVersion.MultiVersion
 description: Allows you to join outdated servers.
