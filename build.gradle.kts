@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.multiVersion"
-version = "1.0.3"
+version = "1.0.4"
 
 tasks.withType<JavaExec>().configureEach {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
