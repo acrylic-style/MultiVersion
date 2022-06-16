@@ -6,19 +6,22 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.ConnectionProtocol;
 import org.jetbrains.annotations.NotNull;
-import xyz.acrylicstyle.multiVersion.transformer.PacketRewriter;
 import xyz.acrylicstyle.multiVersion.transformer.PacketWrapper;
 import xyz.acrylicstyle.multiVersion.transformer.TransformableProtocolVersions;
 
 import java.util.Objects;
 
-public class S22w06a_To_S22w05a extends PacketRewriter {
+public class S22w06a_To_S22w05a extends v1_18_2_To_v1_19 {
     public S22w06a_To_S22w05a() {
         this(TransformableProtocolVersions.SNAPSHOT_22W06A, TransformableProtocolVersions.SNAPSHOT_22W05A);
     }
 
     protected S22w06a_To_S22w05a(@NotNull TransformableProtocolVersions sourcePV, @NotNull TransformableProtocolVersions targetPV) {
         super(sourcePV, targetPV);
+    }
+
+    @Override
+    protected void preRegister() {
     }
 
     @Override
@@ -69,6 +72,15 @@ public class S22w06a_To_S22w05a extends PacketRewriter {
 
     @Override
     public void registerOutbound() {
+    }
+
+    @Override
+    protected void registerItemRewriter() {
+        registerItemRewriter(0x08, 0x28, 0x14, 0x16, 0x28, 0x4D, 0x50, 0x63, 0x66);
+    }
+
+    protected void registerParticleRewriter() {
+        registerParticleRewriter(0x24);
     }
 
     private static void addTagPrefix(CompoundTag tag) {

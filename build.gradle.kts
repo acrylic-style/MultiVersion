@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.multiVersion"
-version = "1.0.4"
+version = "1.0.5"
 
 tasks.withType<JavaExec>().configureEach {
     javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
@@ -19,8 +19,8 @@ java {
 }
 
 blueberry {
-    minecraftVersion.set("22w06a")
-    apiVersion.set("1.0.0-SNAPSHOT")
+    minecraftVersion.set("1.19")
+    apiVersion.set("1.5.0-SNAPSHOT")
 }
 
 repositories {
@@ -30,24 +30,25 @@ repositories {
 }
 
 dependencies {
-    blueberry()
     implementation("com.mojang:logging:1.0.0")
+    blueberry()
 }
 
 tasks {
     withType<net.blueberrymc.blueberryFarm.tasks.RunClient> {
-        this.addArgs("--mixin mixins.multiversion.json")
+        this.addArgs("--debug --mixin mixins.multiversion.json")
+        this.environment("LOG4J_CONFIGURATION_FILE", "log4j2-debug.xml")
     }
 
     withType<net.blueberrymc.blueberryFarm.tasks.RunServer> {
         this.addArgs("--mixin mixins.multiversion.json")
     }
 
-    withType<JavaCompile> {
+    compileJava {
         options.encoding = "UTF-8"
     }
 
-    withType<Jar> {
+    jar {
         manifest.attributes(
             "TweakClass" to "org.spongepowered.asm.launch.MixinTweaker",
             "MixinConfigs" to "mixins.multiversion.json",

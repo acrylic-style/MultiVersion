@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -1128,17 +1127,17 @@ public class PacketWrapper extends FriendlyByteBuf {
     }
 
     @NotNull
-    public <T, C extends Collection<T>> C readCollection(@NotNull IntFunction<C> toCollectionFunction, @NotNull Function<FriendlyByteBuf, T> valueFunction) {
+    public <T, C extends Collection<T>> C readCollection(@NotNull IntFunction<C> toCollectionFunction, @NotNull Reader<T> valueFunction) {
         if (readIsPassthrough) return passthroughCollection(toCollectionFunction, valueFunction);
         return read.readCollection(toCollectionFunction, valueFunction);
     }
 
-    public <T> void writeCollection(@NotNull Collection<T> collection, @NotNull BiConsumer<FriendlyByteBuf, T> biConsumer) {
+    public <T> void writeCollection(@NotNull Collection<T> collection, @NotNull Writer<T> biConsumer) {
         write.writeCollection(collection, biConsumer);
     }
 
     @NotNull
-    public <T> List<T> readList(@NotNull Function<FriendlyByteBuf, T> valueFunction) {
+    public <T> List<T> readList(@NotNull Reader<T> valueFunction) {
         return this.readCollection(Lists::newArrayListWithCapacity, valueFunction);
     }
 
@@ -1153,18 +1152,18 @@ public class PacketWrapper extends FriendlyByteBuf {
     }
 
     @NotNull
-    public <K, V, M extends Map<K, V>> M readMap(@NotNull IntFunction<M> toMapFunction, @NotNull Function<FriendlyByteBuf, K> keyFunction, @NotNull Function<FriendlyByteBuf, V> valueFunction) {
+    public <K, V, M extends Map<K, V>> M readMap(@NotNull IntFunction<M> toMapFunction, @NotNull Reader<K> keyFunction, @NotNull Reader<V> valueFunction) {
         if (readIsPassthrough) return passthroughMap(toMapFunction, keyFunction, valueFunction);
         return read.readMap(toMapFunction, keyFunction, valueFunction);
     }
 
     @NotNull
-    public <K, V> Map<K, V> readMap(@NotNull Function<FriendlyByteBuf, K> keyFunction, @NotNull Function<FriendlyByteBuf, V> valueFunction) {
+    public <K, V> Map<K, V> readMap(@NotNull Reader<K> keyFunction, @NotNull Reader<V> valueFunction) {
         return this.readMap(Maps::newHashMapWithExpectedSize, keyFunction, valueFunction);
     }
 
-    public <K, V> void writeMap(@NotNull Map<K, V> map, @NotNull BiConsumer<FriendlyByteBuf, K> biConsumer, @NotNull BiConsumer<FriendlyByteBuf, V> biConsumer2) {
-        write.writeMap(map, biConsumer, biConsumer2);
+    public <K, V> void writeMap(@NotNull Map<K, V> map, @NotNull Writer<K> kWriter, @NotNull Writer<V> vWriter) {
+        write.writeMap(map, kWriter, vWriter);
     }
 
     public void readWithCount(@NotNull Consumer<FriendlyByteBuf> consumer) {
@@ -1175,8 +1174,8 @@ public class PacketWrapper extends FriendlyByteBuf {
         read.readWithCount(consumer);
     }
 
-    public <T> void writeOptional(@NotNull Optional<T> optional, @NotNull BiConsumer<FriendlyByteBuf, T> biConsumer) {
-        write.writeOptional(optional, biConsumer);
+    public <T> void writeOptional(@NotNull Optional<T> optional, @NotNull Writer<T> writer) {
+        write.writeOptional(optional, writer);
     }
 
     @NotNull
@@ -1909,6 +1908,7 @@ public class PacketWrapper extends FriendlyByteBuf {
         }
     }
 
+    // unused
     @NotNull
     public PacketWrapper passthroughEntityMetadataValue(int type) {
         if (type == 0) passthrough(Type.BYTE); // Byte
@@ -1933,6 +1933,7 @@ public class PacketWrapper extends FriendlyByteBuf {
         return this;
     }
 
+    // unused
     @NotNull
     public PacketWrapper passthroughParticle(int id) {
         if (id == 4) { // minecraft:block
@@ -2135,6 +2136,22 @@ public class PacketWrapper extends FriendlyByteBuf {
     public void index(@NotNull IntPair pair) {
         readerIndex(pair.first());
         writerIndex(pair.second());
+    }
+
+    public static int readVarInt(@NotNull ByteBuf buf) {
+        int i = 0;
+        int i2 = 0;
+
+        byte b;
+        do {
+            b = buf.readByte();
+            i |= (b & 127) << i2++ * 7;
+            if (i2 > 5) {
+                throw new RuntimeException("VarInt too big");
+            }
+        } while((b & 128) == 128);
+
+        return i;
     }
 
     public enum Type {

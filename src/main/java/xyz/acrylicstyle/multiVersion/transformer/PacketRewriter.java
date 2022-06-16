@@ -111,8 +111,8 @@ public class PacketRewriter {
         // ClientIntentionPacket (server-bound)
         // this implementation just changes the protocol version
         rewriteOutbound(ConnectionProtocol.HANDSHAKING, 0x00, wrapper -> {
-            wrapper.readVarInt();
-            wrapper.writeVarInt(getTargetPV());
+            wrapper.readVarInt(); // Protocol Version
+            wrapper.writeVarInt(getTargetPV()); // Protocol Version
             wrapper.passthroughAll();
         });
     }
@@ -135,10 +135,11 @@ public class PacketRewriter {
     }
 
     protected void registerItemRewriter() {
-        registerItemRewriter(0x08, 0x28, 0x14, 0x16, 0x28, 0x4D, 0x50, 0x63, 0x66);
+        registerItemRewriter(0x0A, 0x2A, 0x12, 0x14, 0x26, 0x4D, 0x50, 0x64, 0x67);
     }
 
     protected void registerItemRewriter(int... ids) {
+        // TODO: These code WILL break when packet structure is changed
         internalRewrite(rewriteOutbounds, ConnectionProtocol.PLAY, ids[0], wrapper -> wrapper.readIsPassthrough(() -> new ServerboundContainerClickPacket(wrapper)));
         internalRewrite(rewriteOutbounds, ConnectionProtocol.PLAY, ids[1], wrapper -> wrapper.readIsPassthrough(() -> new ServerboundSetCreativeModeSlotPacket(wrapper)));
         internalRewrite(rewriteInbounds, ConnectionProtocol.PLAY, ids[2], wrapper -> wrapper.readIsPassthrough(() -> new ClientboundContainerSetContentPacket(wrapper)));
@@ -151,7 +152,7 @@ public class PacketRewriter {
     }
 
     protected void registerParticleRewriter() {
-        registerParticleRewriter(0x24);
+        registerParticleRewriter(0x22);
     }
 
     protected void registerParticleRewriter(int packetId) {
@@ -162,12 +163,29 @@ public class PacketRewriter {
         });
     }
 
+    protected void registerEntityRewriter() {
+        registerEntityRewriter(0x00);
+    }
+
+    protected void registerEntityRewriter(int cSpawnEntity) {
+        internalRewrite(rewriteInbounds, ConnectionProtocol.PLAY, cSpawnEntity, wrapper -> {
+            wrapper.passthroughVarInt(); // Entity ID
+            wrapper.passthroughUUID(); // Object UUID
+            wrapper.writeVarInt(remapEntityType(wrapper.readVarInt()));
+            wrapper.passthroughAll();
+        });
+    }
+
     protected int remapSoundId(int soundId) {
         return soundId;
     }
 
     protected int remapParticleId(int particleId) {
         return particleId;
+    }
+
+    protected int remapEntityType(int entityType) {
+        return entityType;
     }
 
     @NotNull
@@ -228,18 +246,30 @@ public class PacketRewriter {
         return remapOutbounds.get(protocol.ordinal()).getOrDefault(newId, newId);
     }
 
+    /**
+     * Rewrites an inbound packet.
+     * @param protocol the protocol
+     * @param oldId the (post-remap) packet id to rewrite
+     * @param handler the handler
+     */
     protected final void rewriteInbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketConsumer handler) {
         if (!registeringInbound) throw new IllegalStateException("Not registering inbound");
         internalRewrite(rewriteInbounds, protocol, oldId, handler);
     }
 
+    /**
+     * Rewrites an outbound packet.
+     * @param protocol the protocol
+     * @param oldId the (post-remap) packet id to rewrite
+     * @param handler the handler
+     */
     protected final void rewriteOutbound(@NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketConsumer handler) {
         if (!registeringOutbound) throw new IllegalStateException("Not registering outbound");
         internalRewrite(rewriteOutbounds, protocol, oldId, handler);
     }
 
     protected final void internalRewrite(@NotNull Int2ObjectMap<Int2ObjectMap<List<PacketConsumer>>> map, @NotNull ConnectionProtocol protocol, int oldId, @NotNull PacketConsumer handler) {
-        map.computeIfAbsent(protocol.ordinal(), (k) -> new Int2ObjectOpenHashMap<>(4))
+        map.computeIfAbsent(protocol.ordinal(), (k) -> new Int2ObjectOpenHashMap<>(ConnectionProtocol.values().length))
                 .computeIfAbsent(oldId, (k) -> new ObjectArrayList<>())
                 .add(handler);
     }
@@ -248,14 +278,14 @@ public class PacketRewriter {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeVarInt(packetId);
         handler.accept(buf);
-        writtenPackets.get().top().addAll(PacketRewriterManager.rewriteInbound(protocol, buf, targetPV));
+        writtenPackets.get().top().addAll(PacketRewriterManager.rewriteInbound(protocol, buf, targetPV, true));
     }
 
     protected final void writeOutboundPacket(@NotNull ConnectionProtocol protocol, int packetId, @NotNull Consumer<FriendlyByteBuf> handler) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeVarInt(packetId);
         handler.accept(buf);
-        writtenPackets.get().top().addAll(PacketRewriterManager.rewriteOutbound(protocol, buf, targetPV));
+        writtenPackets.get().top().addAll(PacketRewriterManager.rewriteOutbound(protocol, buf, targetPV, true));
     }
 
     @NotNull
@@ -325,11 +355,23 @@ public class PacketRewriter {
     }
 
     public static class PacketWrapperRewriter extends PacketWrapper {
+        private final PacketWrapper wrapper;
         private final Function<PacketWrapper, ItemStack> rewriteItem;
 
         public PacketWrapperRewriter(@NotNull PacketWrapper wrapper, @NotNull Function<PacketWrapper, ItemStack> rewriteItem) {
             super(wrapper.getRead(), wrapper.getWrite());
+            this.wrapper = wrapper;
             this.rewriteItem = rewriteItem;
+        }
+
+        @Override
+        public void cancel() {
+            wrapper.cancel();
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return wrapper.isCancelled();
         }
 
         @Override
