@@ -22,7 +22,7 @@ public class OutboundPacketTransformer extends ChannelDuplexHandler {
                 byteBuf.resetReaderIndex();
                 for (ByteBuf buf : PacketRewriterManager.rewriteOutbound(protocol, byteBuf, targetPV)) {
                     int id = ((FriendlyByteBuf) buf).readVarInt();
-                    System.out.println("OUT " + protocol.name() + ": " + oldId + " -> " + id);
+                    //System.out.println("OUT " + protocol.name() + ": " + oldId + " -> " + id);
                     buf.resetReaderIndex();
                     super.write(ctx, buf, promise);
                 }

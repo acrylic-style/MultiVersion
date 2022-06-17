@@ -12,6 +12,7 @@ import io.netty.util.ByteProcessor;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.blueberrymc.util.IntPair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.IdMap;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -48,8 +49,8 @@ import java.util.function.IntFunction;
 
 @SuppressWarnings({ "unused", "UnusedReturnValue" })
 public class PacketWrapper extends FriendlyByteBuf {
-    private final FriendlyByteBuf read;
-    private final FriendlyByteBuf write;
+    private FriendlyByteBuf read;
+    private FriendlyByteBuf write;
     private boolean readIsPassthrough = false;
     private boolean cancelled = false;
 
@@ -77,551 +78,551 @@ public class PacketWrapper extends FriendlyByteBuf {
 
     @Override
     public int indexOf(int i, int i2, byte b) {
-        return read.indexOf(i, i2, b);
+        return getRead().indexOf(i, i2, b);
     }
 
     @Override
     public int bytesBefore(byte b) {
-        return read.bytesBefore(b);
+        return getRead().bytesBefore(b);
     }
 
     @Override
     public int bytesBefore(int i, byte b) {
-        return read.bytesBefore(i, b);
+        return getRead().bytesBefore(i, b);
     }
 
     @Override
     public int bytesBefore(int i, int i2, byte b) {
-        return read.bytesBefore(i, i2, b);
+        return getRead().bytesBefore(i, i2, b);
     }
 
     @Override
     public int forEachByte(@NotNull ByteProcessor byteProcessor) {
-        return read.forEachByte(byteProcessor);
+        return getRead().forEachByte(byteProcessor);
     }
 
     @Override
     public int forEachByte(int i, int i2, @NotNull ByteProcessor byteProcessor) {
-        return read.forEachByte(i, i2, byteProcessor);
+        return getRead().forEachByte(i, i2, byteProcessor);
     }
 
     @Override
     public int forEachByteDesc(@NotNull ByteProcessor byteProcessor) {
-        return read.forEachByteDesc(byteProcessor);
+        return getRead().forEachByteDesc(byteProcessor);
     }
 
     @Override
     public int forEachByteDesc(int i, int i2, @NotNull ByteProcessor byteProcessor) {
-        return read.forEachByteDesc(i, i2, byteProcessor);
+        return getRead().forEachByteDesc(i, i2, byteProcessor);
     }
 
     @Override
     public @NotNull ByteBuf copy() {
-        return read.copy();
+        return getRead().copy();
     }
 
     @Override
     public @NotNull ByteBuf copy(int i, int i2) {
-        return read.copy(i, i2);
+        return getRead().copy(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf slice() {
-        return read.slice();
+        return getRead().slice();
     }
 
     @Override
     public @NotNull ByteBuf retainedSlice() {
-        return read.retainedSlice();
+        return getRead().retainedSlice();
     }
 
     @Override
     public @NotNull ByteBuf slice(int i, int i2) {
-        return read.slice(i, i2);
+        return getRead().slice(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf retainedSlice(int i, int i2) {
-        return read.retainedSlice(i, i2);
+        return getRead().retainedSlice(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf duplicate() {
-        return read.duplicate();
+        return getRead().duplicate();
     }
 
     @Override
     public @NotNull ByteBuf retainedDuplicate() {
-        return read.retainedDuplicate();
+        return getRead().retainedDuplicate();
     }
 
     @Override
     public int nioBufferCount() {
-        return read.nioBufferCount();
+        return getRead().nioBufferCount();
     }
 
     @Override
     public @NotNull ByteBuffer nioBuffer() {
-        return read.nioBuffer();
+        return getRead().nioBuffer();
     }
 
     @Override
     public @NotNull ByteBuffer nioBuffer(int i, int i2) {
-        return read.nioBuffer(i, i2);
+        return getRead().nioBuffer(i, i2);
     }
 
     @Override
     public @NotNull ByteBuffer internalNioBuffer(int i, int i2) {
-        return read.internalNioBuffer(i, i2);
+        return getRead().internalNioBuffer(i, i2);
     }
 
     @Override
     public ByteBuffer @NotNull [] nioBuffers() {
-        return read.nioBuffers();
+        return getRead().nioBuffers();
     }
 
     @Override
     public ByteBuffer @NotNull [] nioBuffers(int i, int i2) {
-        return read.nioBuffers(i, i2);
+        return getRead().nioBuffers(i, i2);
     }
 
     @Override
     public boolean hasArray() {
-        return read.hasArray();
+        return getRead().hasArray();
     }
 
     @Override
     public byte @NotNull [] array() {
-        return read.array();
+        return getRead().array();
     }
 
     @Override
     public int arrayOffset() {
-        return read.arrayOffset();
+        return getRead().arrayOffset();
     }
 
     @Override
     public boolean hasMemoryAddress() {
-        return read.hasMemoryAddress();
+        return getRead().hasMemoryAddress();
     }
 
     @Override
     public long memoryAddress() {
-        return read.memoryAddress();
+        return getRead().memoryAddress();
     }
 
     @Override
     public @NotNull String toString(@NotNull Charset charset) {
-        return read.toString(charset);
+        return getRead().toString(charset);
     }
 
     @Override
     public @NotNull String toString(int i, int i2, @NotNull Charset charset) {
-        return read.toString(i, i2, charset);
+        return getRead().toString(i, i2, charset);
     }
 
     @Override
     public @NotNull ByteBuf retain(int i) {
-        return read.retain(i);
+        return getRead().retain(i);
     }
 
     @Override
     public @NotNull ByteBuf retain() {
-        return read.retain();
+        return getRead().retain();
     }
 
     @Override
     public @NotNull ByteBuf touch() {
-        return read.touch();
+        return getRead().touch();
     }
 
     @Override
     public @NotNull ByteBuf touch(@NotNull Object object) {
-        return read.touch(object);
+        return getRead().touch(object);
     }
 
     @Override
     public boolean release() {
-        return read.release() && write.release();
+        return getRead().release() && getWrite().release();
     }
 
     @Override
     public boolean release(int i) {
-        return read.release(i) && write.release(i);
+        return getRead().release(i) && getWrite().release(i);
     }
 
     @Override
     public @NotNull ByteBuf setBoolean(int i, boolean flag) {
-        return write.setBoolean(i, flag);
+        return getWrite().setBoolean(i, flag);
     }
 
     @Override
     public @NotNull ByteBuf setByte(int i, int i2) {
-        return write.setByte(i, i2);
+        return getWrite().setByte(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setShort(int i, int i2) {
-        return write.setShort(i, i2);
+        return getWrite().setShort(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setShortLE(int i, int i2) {
-        return write.setShortLE(i, i2);
+        return getWrite().setShortLE(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setMedium(int i, int i2) {
-        return write.setMedium(i, i2);
+        return getWrite().setMedium(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setMediumLE(int i, int i2) {
-        return write.setMediumLE(i, i2);
+        return getWrite().setMediumLE(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setInt(int i, int i2) {
-        return write.setInt(i, i2);
+        return getWrite().setInt(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setIntLE(int i, int i2) {
-        return write.setIntLE(i, i2);
+        return getWrite().setIntLE(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setLong(int i, long l) {
-        return write.setLong(i, l);
+        return getWrite().setLong(i, l);
     }
 
     @Override
     public @NotNull ByteBuf setLongLE(int i, long l) {
-        return write.setLongLE(i, l);
+        return getWrite().setLongLE(i, l);
     }
 
     @Override
     public @NotNull ByteBuf setChar(int i, int i2) {
-        return write.setChar(i, i2);
+        return getWrite().setChar(i, i2);
     }
 
     @Override
     public @NotNull ByteBuf setFloat(int i, float f) {
-        return write.setFloat(i, f);
+        return getWrite().setFloat(i, f);
     }
 
     @Override
     public @NotNull ByteBuf setDouble(int i, double d) {
-        return write.setDouble(i, d);
+        return getWrite().setDouble(i, d);
     }
 
     @Override
     public @NotNull ByteBuf setBytes(int i, @NotNull ByteBuf byteBuf) {
-        return write.setBytes(i, byteBuf);
+        return getWrite().setBytes(i, byteBuf);
     }
 
     @Override
     public @NotNull ByteBuf setBytes(int i, @NotNull ByteBuf byteBuf, int i2) {
-        return write.setBytes(i, byteBuf, i2);
+        return getWrite().setBytes(i, byteBuf, i2);
     }
 
     @Override
     public @NotNull ByteBuf setBytes(int i, @NotNull ByteBuf byteBuf, int i2, int i3) {
-        return write.setBytes(i, byteBuf, i2, i3);
+        return getWrite().setBytes(i, byteBuf, i2, i3);
     }
 
     @Override
     public @NotNull ByteBuf setBytes(int i, byte @NotNull [] bytes) {
-        return write.setBytes(i, bytes);
+        return getWrite().setBytes(i, bytes);
     }
 
     @Override
     public @NotNull ByteBuf setBytes(int i, byte @NotNull [] bytes, int i2, int i3) {
-        return write.setBytes(i, bytes, i2, i3);
+        return getWrite().setBytes(i, bytes, i2, i3);
     }
 
     @Override
     public @NotNull ByteBuf setBytes(int i, @NotNull ByteBuffer byteBuffer) {
-        return write.setBytes(i, byteBuffer);
+        return getWrite().setBytes(i, byteBuffer);
     }
 
     @Override
     public int setBytes(int i, @NotNull InputStream inputStream, int i2) throws IOException {
-        return write.setBytes(i, inputStream, i2);
+        return getWrite().setBytes(i, inputStream, i2);
     }
 
     @Override
     public int setBytes(int i, @NotNull ScatteringByteChannel scatteringByteChannel, int i2) throws IOException {
-        return write.setBytes(i, scatteringByteChannel, i2);
+        return getWrite().setBytes(i, scatteringByteChannel, i2);
     }
 
     @Override
     public int setBytes(int i, @NotNull FileChannel fileChannel, long l, int i2) throws IOException {
-        return write.setBytes(i, fileChannel, l, i2);
+        return getWrite().setBytes(i, fileChannel, l, i2);
     }
 
     @Override
     public @NotNull ByteBuf setZero(int i, int i2) {
-        return write.setZero(i, i2);
+        return getWrite().setZero(i, i2);
     }
 
     @Override
     public int setCharSequence(int i, @NotNull CharSequence charSequence, @NotNull Charset charset) {
-        return write.setCharSequence(i, charSequence, charset);
+        return getWrite().setCharSequence(i, charSequence, charset);
     }
 
     @Override
     public int capacity() {
-        return read.capacity();
+        return getRead().capacity();
     }
 
     @NotNull
     @Override
     public ByteBuf capacity(int i) {
-        return read.capacity(i);
+        return getRead().capacity(i);
     }
 
     @Override
     public int maxCapacity() {
-        return read.maxCapacity();
+        return getRead().maxCapacity();
     }
 
     @NotNull
     @Override
     public ByteBufAllocator alloc() {
-        return read.alloc();
+        return getRead().alloc();
     }
 
     @NotNull
     @Override
     public ByteOrder order() {
-        return read.order();
+        return getRead().order();
     }
 
     @NotNull
     @Override
     public ByteBuf order(@NotNull ByteOrder byteOrder) {
-        return read.order(byteOrder);
+        return getRead().order(byteOrder);
     }
 
     @NotNull
     @Override
     public ByteBuf unwrap() {
-        return read.unwrap();
+        return getRead().unwrap();
     }
 
     @Override
     public boolean isDirect() {
-        return read.isDirect();
+        return getRead().isDirect();
     }
 
     @Override
     public boolean isReadOnly() {
-        return read.isReadOnly();
+        return getRead().isReadOnly();
     }
 
     @NotNull
     @Override
     public ByteBuf asReadOnly() {
-        return read.asReadOnly();
+        return getRead().asReadOnly();
     }
 
     @Override
     public boolean getBoolean(int i) {
-        return read.getBoolean(i);
+        return getRead().getBoolean(i);
     }
 
     @Override
     public byte getByte(int i) {
-        return read.getByte(i);
+        return getRead().getByte(i);
     }
 
     @Override
     public short getUnsignedByte(int i) {
-        return read.getUnsignedByte(i);
+        return getRead().getUnsignedByte(i);
     }
 
     @Override
     public short getShort(int i) {
-        return read.getShort(i);
+        return getRead().getShort(i);
     }
 
     @Override
     public short getShortLE(int i) {
-        return read.getShortLE(i);
+        return getRead().getShortLE(i);
     }
 
     @Override
     public int getUnsignedShort(int i) {
-        return read.getUnsignedShort(i);
+        return getRead().getUnsignedShort(i);
     }
 
     @Override
     public int getUnsignedShortLE(int i) {
-        return read.getUnsignedShortLE(i);
+        return getRead().getUnsignedShortLE(i);
     }
 
     @Override
     public int getMedium(int i) {
-        return read.getMedium(i);
+        return getRead().getMedium(i);
     }
 
     @Override
     public int getMediumLE(int i) {
-        return read.getMediumLE(i);
+        return getRead().getMediumLE(i);
     }
 
     @Override
     public int getUnsignedMedium(int i) {
-        return read.getUnsignedMedium(i);
+        return getRead().getUnsignedMedium(i);
     }
 
     @Override
     public int getUnsignedMediumLE(int i) {
-        return read.getUnsignedMediumLE(i);
+        return getRead().getUnsignedMediumLE(i);
     }
 
     @Override
     public int getInt(int i) {
-        return read.getInt(i);
+        return getRead().getInt(i);
     }
 
     @Override
     public int getIntLE(int i) {
-        return read.getIntLE(i);
+        return getRead().getIntLE(i);
     }
 
     @Override
     public long getUnsignedInt(int i) {
-        return read.getUnsignedInt(i);
+        return getRead().getUnsignedInt(i);
     }
 
     @Override
     public long getUnsignedIntLE(int i) {
-        return read.getUnsignedIntLE(i);
+        return getRead().getUnsignedIntLE(i);
     }
 
     @Override
     public long getLong(int i) {
-        return read.getLong(i);
+        return getRead().getLong(i);
     }
 
     @Override
     public long getLongLE(int i) {
-        return read.getLongLE(i);
+        return getRead().getLongLE(i);
     }
 
     @Override
     public char getChar(int i) {
-        return read.getChar(i);
+        return getRead().getChar(i);
     }
 
     @Override
     public float getFloat(int i) {
-        return read.getFloat(i);
+        return getRead().getFloat(i);
     }
 
     @Override
     public double getDouble(int i) {
-        return read.getDouble(i);
+        return getRead().getDouble(i);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, @NotNull ByteBuf byteBuf) {
-        return read.getBytes(i, byteBuf);
+        return getRead().getBytes(i, byteBuf);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, @NotNull ByteBuf byteBuf, int i2) {
-        return read.getBytes(i, byteBuf, i2);
+        return getRead().getBytes(i, byteBuf, i2);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, @NotNull ByteBuf byteBuf, int i2, int i3) {
-        return read.getBytes(i, byteBuf, i2, i3);
+        return getRead().getBytes(i, byteBuf, i2, i3);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, byte@NotNull[] bytes) {
-        return read.getBytes(i, bytes);
+        return getRead().getBytes(i, bytes);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, byte@NotNull[] bytes, int i2, int i3) {
-        return read.getBytes(i, bytes, i2, i3);
+        return getRead().getBytes(i, bytes, i2, i3);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, @NotNull ByteBuffer byteBuffer) {
-        return read.getBytes(i, byteBuffer);
+        return getRead().getBytes(i, byteBuffer);
     }
 
     @NotNull
     @Override
     public ByteBuf getBytes(int i, @NotNull OutputStream outputStream, int i2) throws IOException {
-        return read.getBytes(i, outputStream, i2);
+        return getRead().getBytes(i, outputStream, i2);
     }
 
     @Override
     public int getBytes(int i, @NotNull GatheringByteChannel gatheringByteChannel, int i2) throws IOException {
-        return read.getBytes(i, gatheringByteChannel, i2);
+        return getRead().getBytes(i, gatheringByteChannel, i2);
     }
 
     @Override
     public int getBytes(int i, @NotNull FileChannel fileChannel, long l, int i2) throws IOException {
-        return read.getBytes(i, fileChannel, l, i2);
+        return getRead().getBytes(i, fileChannel, l, i2);
     }
 
     @NotNull
     @Override
     public CharSequence getCharSequence(int i, int i2, @NotNull Charset charset) {
-        return read.getCharSequence(i, i2, charset);
+        return getRead().getCharSequence(i, i2, charset);
     }
 
     @NotNull
     @Override
     public ByteBuf setIndex(int i, int i2) {
-        return read.setIndex(i, i2);
+        return getRead().setIndex(i, i2);
     }
 
     @NotNull
     @Override
     public ByteBuf clear() {
-        return read.clear();
+        return getRead().clear();
     }
 
     @NotNull
     @Override
     public ByteBuf discardReadBytes() {
-        return read.discardReadBytes();
+        return getRead().discardReadBytes();
     }
 
     @NotNull
     @Override
     public ByteBuf discardSomeReadBytes() {
-        return read.discardSomeReadBytes();
+        return getRead().discardSomeReadBytes();
     }
 
     @NotNull
     @Override
     public ByteBuf ensureWritable(int i) {
-        return write.ensureWritable(i);
+        return getWrite().ensureWritable(i);
     }
 
     @Override
     public int ensureWritable(int i, boolean flag) {
-        return write.ensureWritable(i, flag);
+        return getWrite().ensureWritable(i, flag);
     }
 
     @Override
     public int refCnt() {
-        return read.refCnt();
+        return getRead().refCnt();
     }
 
     public void setReadIsPassthrough(boolean readIsPassthrough) {
@@ -642,367 +643,383 @@ public class PacketWrapper extends FriendlyByteBuf {
         return read;
     }
 
+    public void setRead(@NotNull FriendlyByteBuf read) {
+        this.read = read;
+    }
+
     @NotNull
     public FriendlyByteBuf getWrite() {
         return write;
     }
 
+    public void setWrite(@NotNull FriendlyByteBuf write) {
+        this.write = write;
+    }
+
+    @NotNull
+    public PacketWrapper swap() {
+        FriendlyByteBuf temp = getRead();
+        setRead(getWrite());
+        setWrite(temp);
+        return this;
+    }
+
     @NotNull
     public PacketWrapper writeBoolean(boolean flag) {
-        write.writeBoolean(flag);
+        getWrite().writeBoolean(flag);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeByte(int i) {
-        write.writeByte(i);
+        getWrite().writeByte(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBytes(byte@NotNull[] bytes) {
-        write.writeBytes(bytes);
+        getWrite().writeBytes(bytes);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBytes(@NotNull ByteBuf byteBuf) {
-        write.writeBytes(byteBuf);
+        getWrite().writeBytes(byteBuf);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBytes(@NotNull ByteBuffer byteBuffer) {
-        write.writeBytes(byteBuffer);
+        getWrite().writeBytes(byteBuffer);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBytes(@NotNull ByteBuf byteBuf, int i) {
-        write.writeBytes(byteBuf, i);
+        getWrite().writeBytes(byteBuf, i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBytes(byte@NotNull[] bytes, int i, int i2) {
-        write.writeBytes(bytes, i, i2);
+        getWrite().writeBytes(bytes, i, i2);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBytes(@NotNull ByteBuf byteBuf, int i, int i2) {
-        write.writeBytes(byteBuf, i, i2);
+        getWrite().writeBytes(byteBuf, i, i2);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeChar(int i) {
-        write.writeChar(i);
+        getWrite().writeChar(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeDouble(double d) {
-        write.writeDouble(d);
+        getWrite().writeDouble(d);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeDoubleLE(double value) {
-        write.writeDoubleLE(value);
+        getWrite().writeDoubleLE(value);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeFloat(float f) {
-        write.writeFloat(f);
+        getWrite().writeFloat(f);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeFloatLE(float value) {
-        write.writeFloatLE(value);
+        getWrite().writeFloatLE(value);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeInt(int i) {
-        write.writeInt(i);
+        getWrite().writeInt(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeIntLE(int i) {
-        write.writeIntLE(i);
+        getWrite().writeIntLE(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeLong(long l) {
-        write.writeLong(l);
+        getWrite().writeLong(l);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeLongLE(long l) {
-        write.writeLongLE(l);
+        getWrite().writeLongLE(l);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeMedium(int i) {
-        write.writeMedium(i);
+        getWrite().writeMedium(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeMediumLE(int i) {
-        write.writeMediumLE(i);
+        getWrite().writeMediumLE(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writerIndex(int i) {
-        write.writerIndex(i);
+        getWrite().writerIndex(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeShort(int i) {
-        write.writeShort(i);
+        getWrite().writeShort(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeShortLE(int i) {
-        write.writeShortLE(i);
+        getWrite().writeShortLE(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeZero(int i) {
-        write.writeZero(i);
+        getWrite().writeZero(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeBlockPos(@NotNull BlockPos blockPos) {
-        write.writeBlockPos(blockPos);
+        getWrite().writeBlockPos(blockPos);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeByteArray(byte@NotNull[] bytes) {
-        write.writeByteArray(bytes);
+        getWrite().writeByteArray(bytes);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeChunkPos(@NotNull ChunkPos chunkPos) {
-        write.writeChunkPos(chunkPos);
+        getWrite().writeChunkPos(chunkPos);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeComponent(@NotNull Component component) {
-        write.writeComponent(component);
+        getWrite().writeComponent(component);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeDate(@NotNull Date date) {
-        write.writeDate(date);
+        getWrite().writeDate(date);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeEnum(@NotNull Enum<?> enum_) {
-        write.writeEnum(enum_);
+        getWrite().writeEnum(enum_);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeItem(@NotNull ItemStack itemStack) {
-        write.writeItem(itemStack);
+        getWrite().writeItem(itemStack);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeLongArray(long@NotNull[] longs) {
-        write.writeLongArray(longs);
+        getWrite().writeLongArray(longs);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeNbt(@Nullable CompoundTag compoundTag) {
-        write.writeNbt(compoundTag);
+        getWrite().writeNbt(compoundTag);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeResourceLocation(@NotNull ResourceLocation resourceLocation) {
-        write.writeResourceLocation(resourceLocation);
+        getWrite().writeResourceLocation(resourceLocation);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeSectionPos(@NotNull SectionPos sectionPos) {
-        write.writeSectionPos(sectionPos);
+        getWrite().writeSectionPos(sectionPos);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeUtf(@NotNull String s) {
-        write.writeUtf(s);
+        getWrite().writeUtf(s);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeUtf(@NotNull String s, int i) {
-        write.writeUtf(s, i);
+        getWrite().writeUtf(s, i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeUUID(@NotNull UUID uuid) {
-        write.writeUUID(uuid);
+        getWrite().writeUUID(uuid);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeVarInt(int i) {
-        write.writeVarInt(i);
+        getWrite().writeVarInt(i);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeVarIntArray(int@NotNull[] intArray) {
-        write.writeVarIntArray(intArray);
+        getWrite().writeVarIntArray(intArray);
         return this;
     }
 
     @NotNull
     public PacketWrapper writeVarLong(long l) {
-        write.writeVarLong(l);
+        getWrite().writeVarLong(l);
         return this;
     }
 
     public boolean readBoolean() {
         if (readIsPassthrough) return passthroughBoolean();
-        return read.readBoolean();
+        return getRead().readBoolean();
     }
 
     public byte readByte() {
         if (readIsPassthrough) return passthroughByte();
-        return read.readByte();
+        return getRead().readByte();
     }
 
     public short readUnsignedByte() {
         if (readIsPassthrough) return passthroughUnsignedByte();
-        return read.readUnsignedByte();
+        return getRead().readUnsignedByte();
     }
 
     public short readShort() {
         if (readIsPassthrough) return passthroughShort();
-        return read.readShort();
+        return getRead().readShort();
     }
 
     public short readShortLE() {
         if (readIsPassthrough) return passthroughShortLE();
-        return read.readShortLE();
+        return getRead().readShortLE();
     }
 
     public int readUnsignedShort() {
         if (readIsPassthrough) return passthroughUnsignedShort();
-        return read.readUnsignedShort();
+        return getRead().readUnsignedShort();
     }
 
     public int readUnsignedShortLE() {
         if (readIsPassthrough) return passthroughUnsignedShortLE();
-        return read.readUnsignedShortLE();
+        return getRead().readUnsignedShortLE();
     }
 
     public int readMedium() {
         if (readIsPassthrough) return passthroughMedium();
-        return read.readMedium();
+        return getRead().readMedium();
     }
 
     public int readMediumLE() {
         if (readIsPassthrough) return passthroughMediumLE();
-        return read.readMediumLE();
+        return getRead().readMediumLE();
     }
 
     public int readUnsignedMedium() {
         if (readIsPassthrough) return passthroughUnsignedMedium();
-        return read.readUnsignedMedium();
+        return getRead().readUnsignedMedium();
     }
 
     public int readUnsignedMediumLE() {
         if (readIsPassthrough) return passthroughUnsignedMediumLE();
-        return read.readUnsignedMediumLE();
+        return getRead().readUnsignedMediumLE();
     }
 
     public int readInt() {
         if (readIsPassthrough) return passthroughInt();
-        return read.readInt();
+        return getRead().readInt();
     }
 
     public int readIntLE() {
         if (readIsPassthrough) return passthroughIntLE();
-        return read.readIntLE();
+        return getRead().readIntLE();
     }
 
     public long readUnsignedInt() {
         if (readIsPassthrough) return passthroughUnsignedInt();
-        return read.readUnsignedInt();
+        return getRead().readUnsignedInt();
     }
 
     public long readUnsignedIntLE() {
         if (readIsPassthrough) return passthroughUnsignedIntLE();
-        return read.readUnsignedIntLE();
+        return getRead().readUnsignedIntLE();
     }
 
     public long readLong() {
         if (readIsPassthrough) return passthroughLong();
-        return read.readLong();
+        return getRead().readLong();
     }
 
     public long readLongLE() {
         if (readIsPassthrough) return passthroughLongLE();
-        return read.readLongLE();
+        return getRead().readLongLE();
     }
 
     public char readChar() {
         if (readIsPassthrough) return passthroughChar();
-        return read.readChar();
+        return getRead().readChar();
     }
 
     public float readFloat() {
         if (readIsPassthrough) return passthroughFloat();
-        return read.readFloat();
+        return getRead().readFloat();
     }
 
     public double readDouble() {
         if (readIsPassthrough) return passthroughDouble();
-        return read.readDouble();
+        return getRead().readDouble();
     }
 
     @NotNull
     public ByteBuf readBytes(int i) {
         if (readIsPassthrough) return passthroughBytes(i);
-        return read.readBytes(i);
+        return getRead().readBytes(i);
     }
 
     @NotNull
     public ByteBuf readSlice(int i) {
         if (readIsPassthrough) return passthroughSlice(i);
-        return read.readSlice(i);
+        return getRead().readSlice(i);
     }
 
     @NotNull
     public ByteBuf readRetainedSlice(int i) {
         if (readIsPassthrough) return passthroughRetainedSlice(i);
-        return read.readRetainedSlice(i);
+        return getRead().readRetainedSlice(i);
     }
 
     @NotNull
@@ -1011,7 +1028,7 @@ public class PacketWrapper extends FriendlyByteBuf {
             passthroughBytes(byteBuf);
             return this;
         }
-        read.readBytes(byteBuf);
+        getRead().readBytes(byteBuf);
         return this;
     }
 
@@ -1021,7 +1038,7 @@ public class PacketWrapper extends FriendlyByteBuf {
             passthroughBytes(byteBuf, length);
             return this;
         }
-        read.readBytes(byteBuf, length);
+        getRead().readBytes(byteBuf, length);
         return this;
     }
 
@@ -1031,7 +1048,7 @@ public class PacketWrapper extends FriendlyByteBuf {
             passthroughBytes(byteBuf, dstIndex, length);
             return this;
         }
-        read.readBytes(byteBuf, dstIndex, length);
+        getRead().readBytes(byteBuf, dstIndex, length);
         return this;
     }
 
@@ -1041,7 +1058,7 @@ public class PacketWrapper extends FriendlyByteBuf {
             passthroughBytes(bytes);
             return this;
         }
-        read.readBytes(bytes);
+        getRead().readBytes(bytes);
         return this;
     }
 
@@ -1051,7 +1068,7 @@ public class PacketWrapper extends FriendlyByteBuf {
             passthroughBytes(bytes, dstIndex, length);
             return this;
         }
-        read.readBytes(bytes, dstIndex, length);
+        getRead().readBytes(bytes, dstIndex, length);
         return this;
     }
 
@@ -1059,81 +1076,81 @@ public class PacketWrapper extends FriendlyByteBuf {
     public PacketWrapper readBytes(@NotNull ByteBuffer dst) {
         if (readIsPassthrough) {
             int pos = dst.position();
-            read.readBytes(dst);
+            getRead().readBytes(dst);
             int pos2 = dst.position();
             dst.position(pos);
-            write.writeBytes(dst);
+            getWrite().writeBytes(dst);
             dst.position(pos2);
             return this;
         }
-        read.readBytes(dst);
+        getRead().readBytes(dst);
         return this;
     }
 
     // no readIsPassthrough
     @NotNull
     public PacketWrapper readBytes(@NotNull OutputStream outputStream, int i) throws IOException {
-        read.readBytes(outputStream, i);
+        getRead().readBytes(outputStream, i);
         return this;
     }
 
     // no readIsPassthrough
     public int readBytes(@NotNull GatheringByteChannel gatheringByteChannel, int i) throws IOException {
-        return read.readBytes(gatheringByteChannel, i);
+        return getRead().readBytes(gatheringByteChannel, i);
     }
 
     @NotNull
     public CharSequence readCharSequence(int i, @NotNull Charset charset) {
         if (readIsPassthrough) return passthroughCharSequence(i, charset);
-        return read.readCharSequence(i, charset);
+        return getRead().readCharSequence(i, charset);
     }
 
     // no readIsPassthrough
     public int readBytes(@NotNull FileChannel fileChannel, long l, int i) throws IOException {
-        return read.readBytes(fileChannel, l, i);
+        return getRead().readBytes(fileChannel, l, i);
     }
 
     @NotNull
     public PacketWrapper skipBytes(int i) {
-        read.skipBytes(i);
-        write.skipBytes(i);
+        getRead().skipBytes(i);
+        getWrite().skipBytes(i);
         return this;
     }
 
     public int writeBytes(@NotNull InputStream inputStream, int i) throws IOException {
-        return write.writeBytes(inputStream, i);
+        return getWrite().writeBytes(inputStream, i);
     }
 
     public int writeBytes(@NotNull ScatteringByteChannel scatteringByteChannel, int i) throws IOException {
-        return write.writeBytes(scatteringByteChannel, i);
+        return getWrite().writeBytes(scatteringByteChannel, i);
     }
 
     public int writeBytes(@NotNull FileChannel fileChannel, long l, int i) throws IOException {
-        return write.writeBytes(fileChannel, l, i);
+        return getWrite().writeBytes(fileChannel, l, i);
     }
 
     public int writeCharSequence(@NotNull CharSequence charSequence, @NotNull Charset charset) {
-        return write.writeCharSequence(charSequence, charset);
+        return getWrite().writeCharSequence(charSequence, charset);
     }
 
     @NotNull
     public <T> T readWithCodec(@NotNull Codec<T> codec) {
         if (readIsPassthrough) return passthroughWithCodec(codec);
-        return read.readWithCodec(codec);
+        return getRead().readWithCodec(codec);
     }
 
     public <T> void writeWithCodec(@NotNull Codec<T> codec, @NotNull T object) {
-        write.writeWithCodec(codec, object);
+        getWrite().writeWithCodec(codec, object);
     }
 
     @NotNull
     public <T, C extends Collection<T>> C readCollection(@NotNull IntFunction<C> toCollectionFunction, @NotNull Reader<T> valueFunction) {
         if (readIsPassthrough) return passthroughCollection(toCollectionFunction, valueFunction);
-        return read.readCollection(toCollectionFunction, valueFunction);
+        return getRead().readCollection(toCollectionFunction, valueFunction);
     }
 
     public <T> void writeCollection(@NotNull Collection<T> collection, @NotNull Writer<T> biConsumer) {
-        write.writeCollection(collection, biConsumer);
+        getWrite().writeCollection(collection, biConsumer);
     }
 
     @NotNull
@@ -1144,17 +1161,17 @@ public class PacketWrapper extends FriendlyByteBuf {
     @NotNull
     public IntList readIntIdList() {
         if (readIsPassthrough) return passthroughIntIdList();
-        return read.readIntIdList();
+        return getRead().readIntIdList();
     }
 
     public void writeIntIdList(@NotNull IntList intList) {
-        write.writeIntIdList(intList);
+        getWrite().writeIntIdList(intList);
     }
 
     @NotNull
     public <K, V, M extends Map<K, V>> M readMap(@NotNull IntFunction<M> toMapFunction, @NotNull Reader<K> keyFunction, @NotNull Reader<V> valueFunction) {
         if (readIsPassthrough) return passthroughMap(toMapFunction, keyFunction, valueFunction);
-        return read.readMap(toMapFunction, keyFunction, valueFunction);
+        return getRead().readMap(toMapFunction, keyFunction, valueFunction);
     }
 
     @NotNull
@@ -1163,7 +1180,7 @@ public class PacketWrapper extends FriendlyByteBuf {
     }
 
     public <K, V> void writeMap(@NotNull Map<K, V> map, @NotNull Writer<K> kWriter, @NotNull Writer<V> vWriter) {
-        write.writeMap(map, kWriter, vWriter);
+        getWrite().writeMap(map, kWriter, vWriter);
     }
 
     public void readWithCount(@NotNull Consumer<FriendlyByteBuf> consumer) {
@@ -1171,11 +1188,11 @@ public class PacketWrapper extends FriendlyByteBuf {
             passthroughWithCount(consumer);
             return;
         }
-        read.readWithCount(consumer);
+        getRead().readWithCount(consumer);
     }
 
     public <T> void writeOptional(@NotNull Optional<T> optional, @NotNull Writer<T> writer) {
-        write.writeOptional(optional, writer);
+        getWrite().writeOptional(optional, writer);
     }
 
     @NotNull
@@ -1185,65 +1202,65 @@ public class PacketWrapper extends FriendlyByteBuf {
 
     public byte@NotNull[] readByteArray() {
         if (readIsPassthrough) return passthroughByteArray();
-        return read.readByteArray();
+        return getRead().readByteArray();
     }
 
     public byte@NotNull[] readByteArray(int i) {
         if (readIsPassthrough) return passthroughByteArray(i);
-        return read.readByteArray(i);
+        return getRead().readByteArray(i);
     }
 
     public int@NotNull[] readVarIntArray() {
         if (readIsPassthrough) return passthroughVarIntArray();
-        return read.readVarIntArray();
+        return getRead().readVarIntArray();
     }
 
     public int@NotNull[] readVarIntArray(int i) {
         if (readIsPassthrough) return passthroughVarIntArray(i);
-        return read.readVarIntArray(i);
+        return getRead().readVarIntArray(i);
     }
 
     public long@NotNull[] readLongArray() {
         if (readIsPassthrough) return passthroughLongArray();
-        return read.readLongArray();
+        return getRead().readLongArray();
     }
 
     public long@NotNull[] readLongArray(long[] longs) {
         if (readIsPassthrough) return passthroughLongArray(longs);
-        return read.readLongArray(longs);
+        return getRead().readLongArray(longs);
     }
 
     public long@NotNull[] readLongArray(long[] longs, int i) {
         if (readIsPassthrough) return passthroughLongArray(longs, i);
-        return read.readLongArray(longs, i);
+        return getRead().readLongArray(longs, i);
     }
 
     public byte@NotNull[] accessByteBufWithCorrectSize() {
-        return read.accessByteBufWithCorrectSize();
+        return getRead().accessByteBufWithCorrectSize();
     }
 
     @NotNull
     public BlockPos readBlockPos() {
         if (readIsPassthrough) return passthroughBlockPos();
-        return read.readBlockPos();
+        return getRead().readBlockPos();
     }
 
     @NotNull
     public ChunkPos readChunkPos() {
         if (readIsPassthrough) return passthroughChunkPos();
-        return read.readChunkPos();
+        return getRead().readChunkPos();
     }
 
     @NotNull
     public SectionPos readSectionPos() {
         if (readIsPassthrough) return passthroughSectionPos();
-        return read.readSectionPos();
+        return getRead().readSectionPos();
     }
 
     @NotNull
     public Component readComponent() {
         if (readIsPassthrough) return passthroughComponent();
-        return read.readComponent();
+        return getRead().readComponent();
     }
 
     @NotNull
@@ -1253,477 +1270,477 @@ public class PacketWrapper extends FriendlyByteBuf {
 
     public int readVarInt() {
         if (readIsPassthrough) return passthroughVarInt();
-        return read.readVarInt();
+        return getRead().readVarInt();
     }
 
     public long readVarLong() {
         if (readIsPassthrough) return passthroughVarLong();
-        return read.readVarLong();
+        return getRead().readVarLong();
     }
 
     @NotNull
     public UUID readUUID() {
         if (readIsPassthrough) return passthroughUUID();
-        return read.readUUID();
+        return getRead().readUUID();
     }
 
     @Nullable
     public CompoundTag readNbt() {
         if (readIsPassthrough) return passthroughNbt();
-        return read.readNbt();
+        return getRead().readNbt();
     }
 
     @Nullable
     public CompoundTag readAnySizeNbt() {
         if (readIsPassthrough) return passthroughAnySizeNbt();
-        return read.readAnySizeNbt();
+        return getRead().readAnySizeNbt();
     }
 
     @Nullable
     public CompoundTag readNbt(@NotNull NbtAccounter nbtAccounter) {
         if (readIsPassthrough) return passthroughNbt(nbtAccounter);
-        return read.readNbt(nbtAccounter);
+        return getRead().readNbt(nbtAccounter);
     }
 
     @NotNull
     public ItemStack readItem() {
         if (readIsPassthrough) return passthroughItem();
-        return read.readItem();
+        return getRead().readItem();
     }
 
     @NotNull
     public String readUtf() {
         if (readIsPassthrough) return passthroughUtf();
-        return read.readUtf();
+        return getRead().readUtf();
     }
 
     @NotNull
     public String readUtf(int i) {
         if (readIsPassthrough) return passthroughUtf(i);
-        return read.readUtf(i);
+        return getRead().readUtf(i);
     }
 
     @NotNull
     public ResourceLocation readResourceLocation() {
         if (readIsPassthrough) return passthroughResourceLocation();
-        return read.readResourceLocation();
+        return getRead().readResourceLocation();
     }
 
     @NotNull
     public Date readDate() {
         if (readIsPassthrough) return passthroughDate();
-        return read.readDate();
+        return getRead().readDate();
     }
 
     @NotNull
     public BlockHitResult readBlockHitResult() {
         if (readIsPassthrough) return passthroughBlockHitResult();
-        return read.readBlockHitResult();
+        return getRead().readBlockHitResult();
     }
 
     public void writeBlockHitResult(@NotNull BlockHitResult blockHitResult) {
-        write.writeBlockHitResult(blockHitResult);
+        getWrite().writeBlockHitResult(blockHitResult);
     }
 
     @NotNull
     public PacketWrapper writeBlockHitResultAndReturnSelf(@NotNull BlockHitResult blockHitResult) {
-        write.writeBlockHitResult(blockHitResult);
+        getWrite().writeBlockHitResult(blockHitResult);
         return this;
     }
 
     @NotNull
     public BitSet readBitSet() {
         if (readIsPassthrough) return passthroughBitSet();
-        return write.readBitSet();
+        return getWrite().readBitSet();
     }
 
     public void writeBitSet(@NotNull BitSet bitSet) {
-        write.writeBitSet(bitSet);
+        getWrite().writeBitSet(bitSet);
     }
 
     @NotNull
     public PacketWrapper writeBitSetAndReturnSelf(@NotNull BitSet bitSet) {
-        write.writeBitSet(bitSet);
+        getWrite().writeBitSet(bitSet);
         return this;
     }
 
     public int readerCapacity() {
-        return read.capacity();
+        return getRead().capacity();
     }
 
     @NotNull
     public PacketWrapper readerCapacity(int i) {
-        read.capacity(i);
+        getRead().capacity(i);
         return this;
     }
 
     public int readerMaxCapacity() {
-        return read.maxCapacity();
+        return getRead().maxCapacity();
     }
 
     public int writerCapacity() {
-        return write.capacity();
+        return getWrite().capacity();
     }
 
     @NotNull
     public PacketWrapper writerCapacity(int i) {
-        write.capacity(i);
+        getWrite().capacity(i);
         return this;
     }
 
     public int writerMaxCapacity() {
-        return write.maxCapacity();
+        return getWrite().maxCapacity();
     }
 
     @NotNull
     public ByteOrder readerOrder() {
-        return read.order();
+        return getRead().order();
     }
 
     @NotNull
     public ByteOrder writerOrder() {
-        return write.order();
+        return getWrite().order();
     }
 
     @NotNull
     public ByteBuf readerOrder(@NotNull ByteOrder byteOrder) {
-        return read.order(byteOrder);
+        return getRead().order(byteOrder);
     }
 
     @NotNull
     public ByteBuf writerOrder(@NotNull ByteOrder byteOrder) {
-        return write.order(byteOrder);
+        return getWrite().order(byteOrder);
     }
 
     @Nullable
     public ByteBuf readerUnwrap() {
-        return read.unwrap();
+        return getRead().unwrap();
     }
 
     @Nullable
     public ByteBuf writerUnwrap() {
-        return write.unwrap();
+        return getWrite().unwrap();
     }
 
     public boolean readerIsDirect() {
-        return read.isDirect();
+        return getRead().isDirect();
     }
 
     public boolean writerIsDirect() {
-        return write.isDirect();
+        return getWrite().isDirect();
     }
 
     public boolean readerIsReadOnly() {
-        return read.isReadOnly();
+        return getRead().isReadOnly();
     }
 
     public boolean writerIsReadOnly() {
-        return write.isReadOnly();
+        return getWrite().isReadOnly();
     }
 
     @NotNull
     public ByteBuf readerAsReadOnly() {
-        return read.asReadOnly();
+        return getRead().asReadOnly();
     }
 
     @NotNull
     public ByteBuf writerAsReadOnly() {
-        return write.asReadOnly();
+        return getWrite().asReadOnly();
     }
 
     public int readerIndex() {
-        return read.readerIndex();
+        return getRead().readerIndex();
     }
 
     @NotNull
     public PacketWrapper readerIndex(int i) {
-        read.readerIndex(i);
+        getRead().readerIndex(i);
         return this;
     }
 
     public int writerIndex() {
-        return write.writerIndex();
+        return getWrite().writerIndex();
     }
 
     @NotNull
     public PacketWrapper readerSetIndex(int i, int i2) {
-        read.setIndex(i, i2);
+        getRead().setIndex(i, i2);
         return this;
     }
 
     @NotNull
     public PacketWrapper writerSetIndex(int i, int i2) {
-        write.setIndex(i, i2);
+        getWrite().setIndex(i, i2);
         return this;
     }
 
     public int readableBytes() {
-        return read.readableBytes();
+        return getRead().readableBytes();
     }
 
     public int writableBytes() {
-        return write.writableBytes();
+        return getWrite().writableBytes();
     }
 
     public int maxWritableBytes() {
-        return write.maxWritableBytes();
+        return getWrite().maxWritableBytes();
     }
 
     public boolean isReadable() {
-        return read.isReadable();
+        return getRead().isReadable();
     }
 
     public boolean isReadable(int i) {
-        return read.isReadable(i);
+        return getRead().isReadable(i);
     }
 
     public boolean isWritable() {
-        return write.isWritable();
+        return getWrite().isWritable();
     }
 
     public boolean isWritable(int i) {
-        return write.isWritable(i);
+        return getWrite().isWritable(i);
     }
 
     @NotNull
     public PacketWrapper readerClear() {
-        read.clear();
+        getRead().clear();
         return this;
     }
 
     @NotNull
     public PacketWrapper writerClear() {
-        write.clear();
+        getWrite().clear();
         return this;
     }
 
     @NotNull
     public PacketWrapper markReaderIndex() {
-        read.markReaderIndex();
+        getRead().markReaderIndex();
         return this;
     }
 
     @NotNull
     public PacketWrapper resetReaderIndex() {
-        read.resetReaderIndex();
+        getRead().resetReaderIndex();
         return this;
     }
 
     @NotNull
     public PacketWrapper markWriterIndex() {
-        write.markWriterIndex();
+        getWrite().markWriterIndex();
         return this;
     }
 
     @NotNull
     public PacketWrapper resetWriterIndex() {
-        write.resetWriterIndex();
+        getWrite().resetWriterIndex();
         return this;
     }
 
     @NotNull
     public String passthroughUtf() {
-        String s = read.readUtf();
-        write.writeUtf(s);
+        String s = getRead().readUtf();
+        getWrite().writeUtf(s);
         return s;
     }
 
     @NotNull
     public String passthroughUtf(int maxLength) {
-        String s = read.readUtf(maxLength);
-        write.writeUtf(s);
+        String s = getRead().readUtf(maxLength);
+        getWrite().writeUtf(s);
         return s;
     }
 
     public byte passthroughByte() {
-        byte b = read.readByte();
-        write.writeByte(b);
+        byte b = getRead().readByte();
+        getWrite().writeByte(b);
         return b;
     }
 
     public short passthroughShort() {
-        short s = read.readShort();
-        write.writeShort(s);
+        short s = getRead().readShort();
+        getWrite().writeShort(s);
         return s;
     }
 
     public short passthroughShortLE() {
-        short s = read.readShortLE();
-        write.writeShortLE(s);
+        short s = getRead().readShortLE();
+        getWrite().writeShortLE(s);
         return s;
     }
 
     public int passthroughUnsignedShort() {
-        int i = read.readUnsignedShort();
-        write.writeShort(i);
+        int i = getRead().readUnsignedShort();
+        getWrite().writeShort(i);
         return i;
     }
 
     public int passthroughUnsignedShortLE() {
-        int i = read.readUnsignedShortLE();
-        write.writeShortLE(i);
+        int i = getRead().readUnsignedShortLE();
+        getWrite().writeShortLE(i);
         return i;
     }
 
     public int passthroughMedium() {
-        int i = read.readMedium();
-        write.writeMedium(i);
+        int i = getRead().readMedium();
+        getWrite().writeMedium(i);
         return i;
     }
 
     public int passthroughMediumLE() {
-        int i = read.readMediumLE();
-        write.writeMediumLE(i);
+        int i = getRead().readMediumLE();
+        getWrite().writeMediumLE(i);
         return i;
     }
 
     public int passthroughUnsignedMedium() {
-        int i = read.readUnsignedMedium();
-        write.writeMedium(i);
+        int i = getRead().readUnsignedMedium();
+        getWrite().writeMedium(i);
         return i;
     }
 
     public int passthroughUnsignedMediumLE() {
-        int i = read.readUnsignedMediumLE();
-        write.writeMediumLE(i);
+        int i = getRead().readUnsignedMediumLE();
+        getWrite().writeMediumLE(i);
         return i;
     }
 
     public short passthroughUnsignedByte() {
-        short s = read.readUnsignedByte();
-        write.writeByte(s);
+        short s = getRead().readUnsignedByte();
+        getWrite().writeByte(s);
         return s;
     }
 
     public int passthroughVarInt() {
-        int i = read.readVarInt();
-        write.writeVarInt(i);
+        int i = getRead().readVarInt();
+        getWrite().writeVarInt(i);
         return i;
     }
 
     public long passthroughVarLong() {
-        long l = read.readVarLong();
-        write.writeVarLong(l);
+        long l = getRead().readVarLong();
+        getWrite().writeVarLong(l);
         return l;
     }
 
     public int passthroughInt() {
-        int i = read.readInt();
-        write.writeInt(i);
+        int i = getRead().readInt();
+        getWrite().writeInt(i);
         return i;
     }
 
     public int passthroughIntLE() {
-        int i = read.readIntLE();
-        write.writeIntLE(i);
+        int i = getRead().readIntLE();
+        getWrite().writeIntLE(i);
         return i;
     }
 
     public long passthroughUnsignedInt() {
-        long l = read.readUnsignedInt();
-        write.writeInt((int) l);
+        long l = getRead().readUnsignedInt();
+        getWrite().writeInt((int) l);
         return l;
     }
 
     public long passthroughUnsignedIntLE() {
-        long l = read.readUnsignedIntLE();
-        write.writeIntLE((int) l);
+        long l = getRead().readUnsignedIntLE();
+        getWrite().writeIntLE((int) l);
         return l;
     }
 
     public boolean passthroughBoolean() {
-        boolean b = read.readBoolean();
-        write.writeBoolean(b);
+        boolean b = getRead().readBoolean();
+        getWrite().writeBoolean(b);
         return b;
     }
 
     public long passthroughLong() {
-        long l = read.readLong();
-        write.writeLong(l);
+        long l = getRead().readLong();
+        getWrite().writeLong(l);
         return l;
     }
 
     public long passthroughLongLE() {
-        long l = read.readLongLE();
-        write.writeLongLE(l);
+        long l = getRead().readLongLE();
+        getWrite().writeLongLE(l);
         return l;
     }
 
     public char passthroughChar() {
-        char c = read.readChar();
-        write.writeChar(c);
+        char c = getRead().readChar();
+        getWrite().writeChar(c);
         return c;
     }
 
     public float passthroughFloat() {
-        float f = read.readFloat();
-        write.writeFloat(f);
+        float f = getRead().readFloat();
+        getWrite().writeFloat(f);
         return f;
     }
 
     public float passthroughFloatLE() {
-        float f = read.readFloatLE();
-        write.writeFloatLE(f);
+        float f = getRead().readFloatLE();
+        getWrite().writeFloatLE(f);
         return f;
     }
 
     public double passthroughDouble() {
-        double d = read.readDouble();
-        write.writeDoubleLE(d);
+        double d = getRead().readDouble();
+        getWrite().writeDouble(d);
         return d;
     }
 
     public double passthroughDoubleLE() {
-        double d = read.readDoubleLE();
-        write.writeDoubleLE(d);
+        double d = getRead().readDoubleLE();
+        getWrite().writeDoubleLE(d);
         return d;
     }
 
     @NotNull
     public ByteBuf passthroughBytes(int i) {
-        ByteBuf buf = read.readBytes(i);
-        write.writeBytes(buf);
+        ByteBuf buf = getRead().readBytes(i);
+        getWrite().writeBytes(buf);
         return buf;
     }
 
     @NotNull
     public ByteBuf passthroughSlice(int i) {
-        ByteBuf buf = read.readSlice(i);
-        write.writeBytes(buf);
+        ByteBuf buf = getRead().readSlice(i);
+        getWrite().writeBytes(buf);
         return buf;
     }
 
     @NotNull
     public ByteBuf passthroughRetainedSlice(int i) {
-        ByteBuf buf = read.readRetainedSlice(i);
-        write.writeBytes(buf);
+        ByteBuf buf = getRead().readRetainedSlice(i);
+        getWrite().writeBytes(buf);
         return buf;
     }
 
     @NotNull
     public ByteBuf passthroughBytes(@NotNull ByteBuf buf) {
-        read.readBytes(buf);
-        write.writeBytes(buf);
+        getRead().readBytes(buf);
+        getWrite().writeBytes(buf);
         return buf;
     }
 
     @NotNull
     public ByteBuf passthroughBytes(@NotNull ByteBuf buf, int length) {
-        read.readBytes(buf, length);
-        write.writeBytes(buf, length);
+        getRead().readBytes(buf, length);
+        getWrite().writeBytes(buf, length);
         return buf;
     }
 
     @NotNull
     public ByteBuf passthroughBytes(@NotNull ByteBuf buf, int dstIndex, int length) {
-        read.readBytes(buf, dstIndex, length);
-        write.writeBytes(buf, dstIndex, length);
+        getRead().readBytes(buf, dstIndex, length);
+        getWrite().writeBytes(buf, dstIndex, length);
         return buf;
     }
 
     public byte@NotNull[] passthroughBytes(byte@NotNull[] bytes) {
-        read.readBytes(bytes);
-        write.writeBytes(bytes);
+        getRead().readBytes(bytes);
+        getWrite().writeBytes(bytes);
         return bytes;
     }
 
@@ -1731,29 +1748,29 @@ public class PacketWrapper extends FriendlyByteBuf {
         if (bytes.length == length) {
             return passthroughBytes(bytes);
         }
-        read.readBytes(bytes, dstIndex, length);
-        write.writeBytes(bytes, dstIndex, length);
+        getRead().readBytes(bytes, dstIndex, length);
+        getWrite().writeBytes(bytes, dstIndex, length);
         return bytes;
     }
 
     @NotNull
     public CharSequence passthroughCharSequence(int i, @NotNull Charset charset) {
-        CharSequence cs = read.readCharSequence(i, charset);
-        write.writeCharSequence(cs, charset);
+        CharSequence cs = getRead().readCharSequence(i, charset);
+        getWrite().writeCharSequence(cs, charset);
         return cs;
     }
 
     @NotNull
     public <T> T passthroughWithCodec(@NotNull Codec<T> codec) {
-        T object = read.readWithCodec(codec);
-        write.writeWithCodec(codec, object);
+        T object = getRead().readWithCodec(codec);
+        getWrite().writeWithCodec(codec, object);
         return object;
     }
 
     @NotNull
     public IntList passthroughIntIdList() {
-        IntList intList = read.readIntIdList();
-        write.writeIntIdList(intList);
+        IntList intList = getRead().readIntIdList();
+        getWrite().writeIntIdList(intList);
         return intList;
     }
 
@@ -1787,79 +1804,79 @@ public class PacketWrapper extends FriendlyByteBuf {
     }
 
     public byte@NotNull[] passthroughByteArray() {
-        byte[] bytes = read.readByteArray();
-        write.writeByteArray(bytes);
+        byte[] bytes = getRead().readByteArray();
+        getWrite().writeByteArray(bytes);
         return bytes;
     }
 
     public byte@NotNull[] passthroughByteArray(int i) {
-        byte[] bytes = read.readByteArray();
-        write.writeByteArray(bytes);
+        byte[] bytes = getRead().readByteArray();
+        getWrite().writeByteArray(bytes);
         return bytes;
     }
 
     public int@NotNull[] passthroughVarIntArray() {
-        int[] ints = read.readVarIntArray();
-        write.writeVarIntArray(ints);
+        int[] ints = getRead().readVarIntArray();
+        getWrite().writeVarIntArray(ints);
         return ints;
     }
 
     public int@NotNull[] passthroughVarIntArray(int i) {
-        int[] ints = read.readVarIntArray(i);
-        write.writeVarIntArray(ints);
+        int[] ints = getRead().readVarIntArray(i);
+        getWrite().writeVarIntArray(ints);
         return ints;
     }
 
     public long@NotNull[] passthroughLongArray() {
-        long[] longs = read.readLongArray();
-        write.writeLongArray(longs);
+        long[] longs = getRead().readLongArray();
+        getWrite().writeLongArray(longs);
         return longs;
     }
 
     public long@NotNull[] passthroughLongArray(long[] arr) {
-        long[] longs = read.readLongArray(arr);
-        write.writeLongArray(longs);
+        long[] longs = getRead().readLongArray(arr);
+        getWrite().writeLongArray(longs);
         return longs;
     }
 
     public long@NotNull[] passthroughLongArray(long[] arr, int i) {
-        long[] longs = read.readLongArray(arr, i);
-        write.writeLongArray(longs);
+        long[] longs = getRead().readLongArray(arr, i);
+        getWrite().writeLongArray(longs);
         return longs;
     }
 
     @NotNull
     public BlockPos passthroughBlockPos() {
-        BlockPos blockPos = read.readBlockPos();
-        write.writeBlockPos(blockPos);
+        BlockPos blockPos = getRead().readBlockPos();
+        getWrite().writeBlockPos(blockPos);
         return blockPos;
     }
 
     @NotNull
     public ChunkPos passthroughChunkPos() {
-        ChunkPos chunkPos = read.readChunkPos();
-        write.writeChunkPos(chunkPos);
+        ChunkPos chunkPos = getRead().readChunkPos();
+        getWrite().writeChunkPos(chunkPos);
         return chunkPos;
     }
 
     @NotNull
     public SectionPos passthroughSectionPos() {
-        SectionPos sectionPos = read.readSectionPos();
-        write.writeSectionPos(sectionPos);
+        SectionPos sectionPos = getRead().readSectionPos();
+        getWrite().writeSectionPos(sectionPos);
         return sectionPos;
     }
 
     @NotNull
     public Component passthroughComponent() {
-        Component component = read.readComponent();
-        write.writeComponent(component);
+        Component component = getRead().readComponent();
+        getWrite().writeComponent(component);
         return component;
     }
 
     @NotNull
     public UUID passthroughUUID() {
-        UUID uuid = read.readUUID();
-        write.writeUUID(uuid);
+        UUID uuid = getRead().readUUID();
+        getWrite().writeUUID(uuid);
         return uuid;
     }
 
@@ -1870,8 +1887,8 @@ public class PacketWrapper extends FriendlyByteBuf {
 
     @Nullable
     public CompoundTag passthroughAnySizeNbt() {
-        CompoundTag tag = read.readAnySizeNbt();
-        write.writeNbt(tag);
+        CompoundTag tag = getRead().readAnySizeNbt();
+        getWrite().writeNbt(tag);
         return tag;
     }
 
@@ -1887,7 +1904,7 @@ public class PacketWrapper extends FriendlyByteBuf {
             this.writerIndex(writerIndex);
             try {
                 CompoundTag tag = NbtIo.read(new ByteBufInputStream(this), nbtAccounter);
-                if (!readIsPassthrough) write.writeNbt(tag);
+                if (!readIsPassthrough) getWrite().writeNbt(tag);
                 return tag;
             } catch (IOException var5) {
                 throw new EncoderException(var5);
@@ -2058,35 +2075,37 @@ public class PacketWrapper extends FriendlyByteBuf {
 
     @NotNull
     public Date passthroughDate() {
-        Date date = read.readDate();
-        write.writeDate(date);
+        Date date = getRead().readDate();
+        getWrite().writeDate(date);
         return date;
     }
 
     @NotNull
     public ResourceLocation passthroughResourceLocation() {
-        ResourceLocation location = read.readResourceLocation();
-        write.writeResourceLocation(location);
+        ResourceLocation location = getRead().readResourceLocation();
+        getWrite().writeResourceLocation(location);
         return location;
     }
 
     @NotNull
     public BlockHitResult passthroughBlockHitResult() {
-        BlockHitResult blockHitResult = read.readBlockHitResult();
-        write.writeBlockHitResult(blockHitResult);
+        BlockHitResult blockHitResult = getRead().readBlockHitResult();
+        getWrite().writeBlockHitResult(blockHitResult);
         return blockHitResult;
     }
 
     @NotNull
     public BitSet passthroughBitSet() {
-        BitSet bitSet = read.readBitSet();
-        write.writeBitSet(bitSet);
+        BitSet bitSet = getRead().readBitSet();
+        getWrite().writeBitSet(bitSet);
         return bitSet;
     }
 
     @NotNull
     public PacketWrapper passthroughAll() {
-        write.writeBytes(read, read.readerIndex(), read.readableBytes());
+        getWrite().writeBytes(read, getRead().readerIndex(), getRead().readableBytes());
+        //getWrite().writeBytes(getRead().readBytes(getRead().readableBytes()));
+        getRead().readerIndex(getRead().writerIndex());
         return this;
     }
 
@@ -2122,9 +2141,9 @@ public class PacketWrapper extends FriendlyByteBuf {
     }
 
     public int peekVarInt() {
-        int readerIndex = read.readerIndex();
-        int i = read.readVarInt();
-        read.readerIndex(readerIndex);
+        int readerIndex = getRead().readerIndex();
+        int i = getRead().readVarInt();
+        getRead().readerIndex(readerIndex);
         return i;
     }
 
@@ -2136,6 +2155,17 @@ public class PacketWrapper extends FriendlyByteBuf {
     public void index(@NotNull IntPair pair) {
         readerIndex(pair.first());
         writerIndex(pair.second());
+    }
+
+    @Nullable
+    @Override
+    public <T> T readById(@NotNull IdMap<T> idMap) {
+        return getRead().readById(idMap);
+    }
+
+    @Override
+    public <T> void writeId(@NotNull IdMap<T> idMap, @NotNull T object) {
+        getWrite().writeId(idMap, object);
     }
 
     public static int readVarInt(@NotNull ByteBuf buf) {

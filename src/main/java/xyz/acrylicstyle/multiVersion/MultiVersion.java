@@ -12,6 +12,7 @@ import net.blueberrymc.common.event.network.ConnectionSetupCompressionEvent;
 import net.minecraft.SharedConstants;
 import xyz.acrylicstyle.multiVersion.transformer.InboundPacketTransformer;
 import xyz.acrylicstyle.multiVersion.transformer.OutboundPacketTransformer;
+import xyz.acrylicstyle.multiVersion.transformer.PacketRewriterManager;
 import xyz.acrylicstyle.multiVersion.transformer.TransformableProtocolVersions;
 
 import java.io.IOException;
@@ -58,6 +59,7 @@ public class MultiVersion extends BlueberryMod implements Listener {
     public static void onConnectionInit(ConnectionInitEvent e) {
         if (e.isLocalServer()) return;
         setupTransformer(e.getChannel());
+        PacketRewriterManager.register(); // debug
     }
 
     @EventHandler

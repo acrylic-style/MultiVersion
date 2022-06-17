@@ -143,8 +143,10 @@ public class PacketRewriterManager {
                 if (pw.isCancelled()) {
                     return packets;
                 }
+                read = pw.getRead();
+                write = pw.getWrite();
             } catch (Exception e) {
-                LOGGER.error("Failed to rewrite inbound packet in " + rewriter.getClass().getTypeName(), e);
+                LOGGER.error("Failed to rewrite inbound packet in {} (packetId: {})", rewriter.getClass().getTypeName(), packetId, e);
                 throw e;
             }
             // release read buffer
@@ -203,7 +205,7 @@ public class PacketRewriterManager {
                     return packets;
                 }
             } catch (Exception e) {
-                LOGGER.error("Failed to rewrite outbound packet in " + rewriter.getClass().getTypeName(), e);
+                LOGGER.error("Failed to rewrite outbound packet in {} (packetId: {})", rewriter.getClass().getTypeName(), packetId, e);
                 throw e;
             }
             // release read buffer

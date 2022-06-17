@@ -10,6 +10,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +63,7 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
 
     @Override
     protected void preRegister() {
+        registerItemRewriter();
         registerEntityRewriter();
         registerSoundRewriter();
         registerParticleRewriter();
@@ -127,7 +130,10 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
             wrapper.passthroughByte(); // Yaw
             wrapper.writeByte(0); // Head Yaw
             wrapper.writeVarInt(wrapper.readInt()); // Data (Int -> VarInt)
-            wrapper.passthroughAll(); // Velocity X, Velocity Y, Velocity Z
+            wrapper.passthroughShort(); // Velocity X
+            wrapper.passthroughShort(); // Velocity Y
+            wrapper.passthroughShort(); // Velocity Z
+            wrapper.writerIndex();
         });
 
         // Spawn Living Entity (removed)
@@ -148,7 +154,7 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
             writeInboundPacket(ConnectionProtocol.PLAY, 0x00, buf -> {
                 buf.writeVarInt(id); // Entity ID
                 buf.writeUUID(uuid); // Entity UUID
-                buf.writeVarInt(type); // Entity Type
+                buf.writeVarInt(type + remapEntityType(type)); // Entity Type
                 buf.writeDouble(x);
                 buf.writeDouble(y);
                 buf.writeDouble(z);
@@ -175,7 +181,7 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
             writeInboundPacket(ConnectionProtocol.PLAY, 0x00, buf -> {
                 buf.writeVarInt(entityId); // Entity ID
                 buf.writeUUID(uuid); // Entity UUID
-                buf.writeVarInt(64); // Entity Type (of Painting)
+                buf.writeVarInt(63); // Entity Type (of Painting)
                 buf.writeDouble(loc.getX() + 0.5d); // X
                 buf.writeDouble(loc.getY() + 0.5d); // Y
                 buf.writeDouble(loc.getZ() + 0.5d); // Z
@@ -290,6 +296,12 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
             wrapper.writeDouble(wrapper.readFloat()); // Y (Float -> Double)
             wrapper.writeDouble(wrapper.readFloat()); // Z (Float -> Double)
             wrapper.passthroughAll(); // Strength, Record Count, Records, Player Motion X/Y/Z
+        });
+
+        // Particle
+        rewriteInbound(ConnectionProtocol.PLAY, 0x21, wrapper -> {
+            wrapper.writeVarInt(wrapper.readInt()); // Particle ID (Int -> VarInt)
+            wrapper.passthroughAll();
         });
 
         // Join Game
@@ -435,18 +447,7 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
 
     @Override
     public void registerOutbound() {
-        // + 0x03 Chat Command
-        remapOutbound(ConnectionProtocol.PLAY, 0x04, 0xFE);
-        // + 0x05 Chat Preview
-        remapOutbound(ConnectionProtocol.PLAY, 0x05, 0xFF); // -> discard
-        for (int oldId = 0x06; oldId < 0x2F; oldId++) {
-            remapOutbound(ConnectionProtocol.PLAY, oldId, oldId - 2);
-        }
-
-        // Discard packets
-        // + 0x05 Chat Preview
-        rewriteOutbound(ConnectionProtocol.PLAY, 0xFF, PacketWrapper::cancel);
-
+        //----- LOGIN -----//
         // Login Start
         rewriteOutbound(ConnectionProtocol.LOGIN, 0x00, wrapper -> {
             wrapper.passthroughUtf(16); // Name
@@ -457,10 +458,24 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
             }
         });
 
+        //----- PLAY -----//
+        // + 0x03 Chat Command
+        remapOutbound(ConnectionProtocol.PLAY, 0x03, 0xFE);
+        remapOutbound(ConnectionProtocol.PLAY, 0x04, 0x03);
+        // + 0x05 Chat Preview
+        remapOutbound(ConnectionProtocol.PLAY, 0x05, 0xFF); // -> discard
+        for (int oldId = 0x06; oldId <= 0x31; oldId++) {
+            remapOutbound(ConnectionProtocol.PLAY, oldId, oldId - 2);
+        }
+
+        // Discard packets
+        // + 0x05 Chat Preview
+        rewriteOutbound(ConnectionProtocol.PLAY, 0xFF, PacketWrapper::cancel);
+
         // Chat Command
         rewriteOutbound(ConnectionProtocol.PLAY, 0xFE, wrapper -> {
             wrapper.cancel();
-            writeOutboundPacket(ConnectionProtocol.PLAY, 0x04, buf -> {
+            writeOutboundPacket(ConnectionProtocol.PLAY, 0x03, buf -> {
                 buf.writeUtf("/" + wrapper.readUtf()); // Command
                 int signatures = wrapper.readVarInt();
                 for (int i = 0; i < signatures; i++) {
@@ -471,12 +486,20 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
         });
 
         // Chat Message
-        rewriteOutbound(ConnectionProtocol.PLAY, 0x04, wrapper -> {
+        rewriteOutbound(ConnectionProtocol.PLAY, 0x03, wrapper -> {
             wrapper.passthroughUtf(256); // Message
             wrapper.readLong(); // Timestamp
             wrapper.readLong(); // Salt
             wrapper.readByteArray(); // Signature
             wrapper.readBoolean(); // Signed Preview
+        });
+
+        // Player Digging
+        rewriteOutbound(ConnectionProtocol.PLAY, 0x1A, wrapper -> {
+            wrapper.passthroughVarInt(); // Status
+            wrapper.passthroughBlockPos(); // Location
+            wrapper.passthroughByte(); // Face
+            sequenceHandler(wrapper); // Sequence
         });
 
         // Set Beacon Effect
@@ -492,6 +515,24 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
                 wrapper.writeVarInt(-1); // Secondary Effect ID (not present)
             }
         });
+
+        // Player Block Placement
+        rewriteOutbound(ConnectionProtocol.PLAY, 0x2E, wrapper -> {
+            wrapper.passthroughVarInt(); // Hand
+            wrapper.passthroughBlockPos(); // Location
+            wrapper.passthroughVarInt(); // Face
+            wrapper.passthroughFloat(); // Cursor Position X
+            wrapper.passthroughFloat(); // Cursor Position Y
+            wrapper.passthroughFloat(); // Cursor Position Z
+            wrapper.passthroughBoolean(); // Inside block
+            sequenceHandler(wrapper); // Sequence
+        });
+
+        // Use Item
+        rewriteOutbound(ConnectionProtocol.PLAY, 0x2F, wrapper -> {
+            wrapper.passthroughVarInt(); // Hand
+            sequenceHandler(wrapper); // Sequence
+        });
     }
 
     @Override
@@ -499,30 +540,30 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
         // Allay
         if (entityType <= 7) {
             // Area Effect Cloud - Boat
-            return entityType + 1;
+            return 1;
         }
         // Chest Boat
         if (entityType <= 29) {
             // Cat - Fox
-            return entityType + 2;
+            return 2;
         }
         // Frog
         if (entityType <= 88) {
             // Ghast - Strider
-            return entityType + 3;
+            return 3;
         }
         // Tadpole
         if (entityType <= 100) {
             // Egg - Wandering Trader
-            return entityType + 4;
+            return 4;
         }
         // Warden
         if (entityType <= 112) {
             // Witch - Fishing Bobber
-            return entityType + 5;
+            return 5;
         }
         LOGGER.warn("Unmapped entity type: " + entityType);
-        return entityType;
+        return 0;
     }
 
     @Override
@@ -602,6 +643,85 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
         }
         LOGGER.warn("Unmapped particle id: " + particleId);
         return particleId;
+    }
+
+    @Override
+    protected @NotNull ItemStack rewriteInboundItemData(@NotNull PacketWrapper wrapper) {
+        if (wrapper.passthroughBoolean()) { // present
+            int itemId = wrapper.getRead().readVarInt();
+            if (itemId >= 19) itemId++;
+            if (itemId >= 28) itemId++;
+            if (itemId >= 36) itemId++;
+            if (itemId >= 107) itemId += 3;
+            if (itemId >= 115) itemId++;
+            if (itemId >= 123) itemId++;
+            if (itemId >= 131) itemId++;
+            if (itemId >= 139) itemId++;
+            if (itemId >= 210) itemId++;
+            if (itemId >= 220) itemId++;
+            if (itemId == 244) itemId = 338; // OAK_STAIRS
+            if (itemId >= 245) itemId--;
+            if (itemId >= 263) itemId++;
+            if (itemId >= 287) itemId += 2;
+            if (itemId >= 292) itemId++;
+            if (itemId >= 303) itemId++;
+            if (itemId >= 310) itemId += 4;
+            if (itemId >= 318) itemId++;
+            if (itemId >= 321) itemId += 3;
+            if (itemId >= 333) itemId++;
+            if (itemId == 391) itemId = 342; // ACACIA_STAIRS
+            if (itemId == 392) itemId = 343; // DARK_OAK_STAIRS
+            if (itemId >= 393) itemId += 2;
+            if (itemId >= 617) itemId++;
+            if (itemId >= 629) itemId++;
+            if (itemId >= 638) itemId++;
+            if (itemId >= 647) itemId++;
+            if (itemId >= 655) itemId++;
+            if (itemId == 671) itemId = 700; // SPRUCE_BOAT
+            if (itemId == 672) itemId = 702; // BIRCH_BOAT
+            if (itemId == 673) itemId = 704; // JUNGLE_BOAT
+            if (itemId == 674) itemId = 706; // ACACIA_BOAT
+            if (itemId == 675) itemId = 708; // DARK_OAK_BOAT
+            if (itemId >= 676) itemId += 8;
+            if (itemId >= 774) itemId++;
+            if (itemId >= 788) itemId++;
+            if (itemId >= 796) itemId++;
+            if (itemId >= 872) itemId++;
+            if (itemId >= 891) itemId++;
+            if (itemId >= 925) itemId++;
+            if (itemId >= 932) itemId++;
+            if (itemId >= 1028) itemId++;
+            if (itemId >= 1029) itemId++;
+            if (itemId >= 1042) itemId++;
+            wrapper.writeVarInt(itemId);
+            var count = wrapper.passthroughByte();
+            var tag = wrapper.passthroughNbt();
+            ItemStack item = new ItemStack(Item.byId(itemId), count);
+            item.setTag(tag);
+            return item;
+        } else {
+            return ItemStack.EMPTY;
+        }
+    }
+
+    @Override
+    protected @NotNull ItemStack rewriteOutboundItemData(@NotNull PacketWrapper wrapper) {
+        if (wrapper.passthroughBoolean()) { // present
+            int itemId = wrapper.getRead().readVarInt();
+            wrapper.writeVarInt(itemId);
+            var count = wrapper.passthroughByte();
+            var tag = wrapper.passthroughNbt();
+            ItemStack item = new ItemStack(Item.byId(itemId), count);
+            item.setTag(tag);
+            return item;
+        } else {
+            return ItemStack.EMPTY;
+        }
+    }
+
+    @Override
+    protected void registerItemRewriter() {
+        registerItemRewriter(0x08, 0x28, 0x14, 0x16, 0x28, 0x4D, 0x50, 0x63, 0x66);
     }
 
     private void sequenceHandler(PacketWrapper wrapper) {

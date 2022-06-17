@@ -171,7 +171,9 @@ public class PacketRewriter {
         internalRewrite(rewriteInbounds, ConnectionProtocol.PLAY, cSpawnEntity, wrapper -> {
             wrapper.passthroughVarInt(); // Entity ID
             wrapper.passthroughUUID(); // Object UUID
-            wrapper.writeVarInt(remapEntityType(wrapper.readVarInt()));
+            int entityId = wrapper.readVarInt();
+            int offset = remapEntityType(entityId);
+            wrapper.writeVarInt(entityId + offset);
             wrapper.passthroughAll();
         });
     }
@@ -184,6 +186,11 @@ public class PacketRewriter {
         return particleId;
     }
 
+    /**
+     * Remaps the entity type.
+     * @param entityType the old entity type
+     * @return offset in old -> new
+     */
     protected int remapEntityType(int entityType) {
         return entityType;
     }
@@ -314,8 +321,18 @@ public class PacketRewriter {
         writtenPackets.get().push(new ObjectArrayList<>());
         List<ByteBuf> list;
         try {
-            for (PacketConsumer consumer : consumers) {
-                consumer.accept(wrapper);
+            int readerIndex = wrapper.readerIndex();
+            var itr = consumers.iterator();
+            while (itr.hasNext()) {
+                itr.next().accept(wrapper);
+                if (wrapper.isCancelled()) {
+                    break;
+                }
+                if (itr.hasNext()) {
+                    wrapper.swap();
+                    wrapper.readerIndex(readerIndex);
+                    wrapper.getWrite().readerIndex(0).writerIndex(readerIndex);
+                }
             }
         } finally {
             list = writtenPackets.get().pop();
@@ -362,6 +379,26 @@ public class PacketRewriter {
             super(wrapper.getRead(), wrapper.getWrite());
             this.wrapper = wrapper;
             this.rewriteItem = rewriteItem;
+        }
+
+        @Override
+        public @NotNull FriendlyByteBuf getRead() {
+            return wrapper.getRead();
+        }
+
+        @Override
+        public void setRead(@NotNull FriendlyByteBuf read) {
+            wrapper.setRead(read);
+        }
+
+        @Override
+        public @NotNull FriendlyByteBuf getWrite() {
+            return wrapper.getWrite();
+        }
+
+        @Override
+        public void setWrite(@NotNull FriendlyByteBuf write) {
+            wrapper.setWrite(write);
         }
 
         @Override

@@ -30,6 +30,11 @@ public class S21w42a_To_S21w41a extends S21w43a_To_S21w42a {
     public void registerInbound() {
     }
 
+    @Override
+    protected void registerItemRewriter() {
+        registerItemRewriter(0x08, 0x28, 0x14, 0x16, 0x28, 0x4D, 0x50, 0x63, 0x66);
+    }
+
     @NotNull
     @Override
     protected ItemStack rewriteOutboundItemData(@NotNull PacketWrapper wrapper) {
