@@ -1,0 +1,8 @@
+id: multiversion
+name: MultiVersion
+version: 1.0.5
+main: xyz.acrylicstyle.multiVersion.MultiVersion
+description: Allows you to join outdated servers.
+source: true
+sourceDir: src/main/java
+include: src/main/resources

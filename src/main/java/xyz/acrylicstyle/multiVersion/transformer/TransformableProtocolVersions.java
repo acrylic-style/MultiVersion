@@ -4,6 +4,7 @@ import net.blueberrymc.util.NameGetter;
 import org.jetbrains.annotations.NotNull;
 
 public enum TransformableProtocolVersions implements NameGetter {
+    v1_19_1("22w24a", 0x4000005C),
     v1_19("1.19", 759),
     v1_18_2("1.18.2", 758),
     v1_18_2_RC1("1.18.2 rc1", 0x40000049),

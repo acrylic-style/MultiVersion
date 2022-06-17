@@ -10,6 +10,7 @@ import net.blueberrymc.common.bml.event.Listener;
 import net.blueberrymc.common.event.network.ConnectionInitEvent;
 import net.blueberrymc.common.event.network.ConnectionSetupCompressionEvent;
 import net.minecraft.SharedConstants;
+import xyz.acrylicstyle.multiVersion.data.MappingLoader;
 import xyz.acrylicstyle.multiVersion.transformer.InboundPacketTransformer;
 import xyz.acrylicstyle.multiVersion.transformer.OutboundPacketTransformer;
 import xyz.acrylicstyle.multiVersion.transformer.PacketRewriterManager;
@@ -20,9 +21,10 @@ import java.io.IOException;
 public class MultiVersion extends BlueberryMod implements Listener {
     @Override
     public void onLoad() {
-        if (SharedConstants.getProtocolVersion() > TransformableProtocolVersions.values()[0].getProtocolVersion()) {
+        if (!SharedConstants.IS_RUNNING_IN_IDE && SharedConstants.getProtocolVersion() > TransformableProtocolVersions.values()[0].getProtocolVersion()) {
             throw new RuntimeException("Incompatible version! Please use " + TransformableProtocolVersions.values()[0].getName() + "!");
         }
+        MappingLoader.loadAll();
     }
 
     @Override

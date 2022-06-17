@@ -1,5 +1,9 @@
 package xyz.acrylicstyle.multiVersion.transformer.rewriters;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.blueberrymc.common.Blueberry;
 import net.blueberrymc.util.Util;
 import net.minecraft.client.Minecraft;
@@ -15,9 +19,13 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import xyz.acrylicstyle.multiVersion.data.MappingDataKey;
+import xyz.acrylicstyle.multiVersion.data.MappingDataPair;
+import xyz.acrylicstyle.multiVersion.data.MappingVersion;
 import xyz.acrylicstyle.multiVersion.transformer.PacketRewriter;
 import xyz.acrylicstyle.multiVersion.transformer.PacketWrapper;
 import xyz.acrylicstyle.multiVersion.transformer.TransformableProtocolVersions;
+import xyz.acrylicstyle.multiVersion.util.CompactArrayUtil;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -52,6 +60,7 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
               }
             }""";
     private static final CompoundTag CHAT_REGISTRY = Util.required(() -> TagParser.parseTag(CHAT_REGISTRY_SNBT)).getCompound("minecraft:chat_type");
+    private static final MappingDataPair MAPPING = MappingDataPair.of(MappingVersion.v1_18_2, MappingVersion.v1_19);
 
     public v1_18_2_To_v1_19() {
         this(TransformableProtocolVersions.v1_19, TransformableProtocolVersions.v1_18_2);
@@ -537,118 +546,29 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
 
     @Override
     protected int remapEntityType(int entityType) {
-        // Allay
-        if (entityType <= 7) {
-            // Area Effect Cloud - Boat
-            return 1;
+        // returns offset
+        int remappedId = MAPPING.remapIdFirstToSecond(MappingDataKey.ENTITY_TYPE, entityType);
+        if (remappedId < 0) {
+            throw new IllegalArgumentException("Failed to remap entity type: " + entityType);
         }
-        // Chest Boat
-        if (entityType <= 29) {
-            // Cat - Fox
-            return 2;
-        }
-        // Frog
-        if (entityType <= 88) {
-            // Ghast - Strider
-            return 3;
-        }
-        // Tadpole
-        if (entityType <= 100) {
-            // Egg - Wandering Trader
-            return 4;
-        }
-        // Warden
-        if (entityType <= 112) {
-            // Witch - Fishing Bobber
-            return 5;
-        }
-        LOGGER.warn("Unmapped entity type: " + entityType);
-        return 0;
+        return remappedId - entityType;
     }
 
     @Override
     protected int remapSoundId(int soundId) {
-        if (soundId <= 153) {
-            return soundId + 7;
-        }
-        if (soundId <= 158) {
-            return soundId + 8;
-        }
-        if (soundId <= 390) {
-            return soundId + 9;
-        }
-        if (soundId <= 441) {
-            return soundId + 28;
-        }
-        if (soundId <= 449) {
-            return soundId + 30;
-        }
-        if (soundId <= 492) {
-            return soundId + 31;
-        }
-        if (soundId <= 584) {
-            return soundId + 39;
-        }
-        if (soundId <= 611) {
-            return soundId + 44;
-        }
-        if (soundId <= 619) {
-            return soundId + 59;
-        }
-        if (soundId <= 639) {
-            return soundId + 60;
-        }
-        if (soundId <= 653) {
-            return soundId + 61;
-        }
-        if (soundId <= 658) {
-            return soundId + 64;
-        }
-        if (soundId <= 761) {
-            return soundId + 69;
-        }
-        if (soundId <= 896) {
-            return soundId + 70;
-        }
-        if (soundId <= 903) {
-            return soundId + 83;
-        }
-        if (soundId <= 1033) {
-            return soundId + 94;
-        }
-        if (soundId <= 1122) {
-            return soundId + 98;
-        }
-        if (soundId <= 1202) {
-            return soundId + 118;
-        }
-        LOGGER.warn("Unmapped sound id: " + soundId);
-        return soundId;
+        return MAPPING.remapIdFirstToSecondOrThrow(MappingDataKey.SOUND_EVENT, soundId);
     }
 
     @Override
     protected int remapParticleId(int particleId) {
-        if (particleId <= 23) {
-            return particleId;
-        }
-        // + SONIC_BOOM
-        if (particleId <= 27) {
-            return particleId + 1;
-        }
-        // + SCULK_SOUL
-        // + SCULK_CHARGE
-        // + SCULK_CHARGE_POP
-        if (particleId <= 87) {
-            return particleId + 4;
-        }
-        LOGGER.warn("Unmapped particle id: " + particleId);
-        return particleId;
+        return MAPPING.remapIdFirstToSecondOrThrow(MappingDataKey.PARTICLE_TYPE, particleId);
     }
 
     @Override
     protected @NotNull ItemStack rewriteInboundItemData(@NotNull PacketWrapper wrapper) {
         if (wrapper.passthroughBoolean()) { // present
             int itemId = wrapper.getRead().readVarInt();
+            /*
             if (itemId >= 19) itemId++;
             if (itemId >= 28) itemId++;
             if (itemId >= 36) itemId++;
@@ -693,6 +613,8 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
             if (itemId >= 1028) itemId++;
             if (itemId >= 1029) itemId++;
             if (itemId >= 1042) itemId++;
+            */
+            itemId = MAPPING.remapIdFirstToSecond(MappingDataKey.ITEM, itemId);
             wrapper.writeVarInt(itemId);
             var count = wrapper.passthroughByte();
             var tag = wrapper.passthroughNbt();
@@ -708,6 +630,8 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
     protected @NotNull ItemStack rewriteOutboundItemData(@NotNull PacketWrapper wrapper) {
         if (wrapper.passthroughBoolean()) { // present
             int itemId = wrapper.getRead().readVarInt();
+            itemId = MAPPING.remapIdSecondToFirst(MappingDataKey.ITEM, itemId);
+            if (itemId < 0) itemId = 1; // set to stone
             wrapper.writeVarInt(itemId);
             var count = wrapper.passthroughByte();
             var tag = wrapper.passthroughNbt();
@@ -736,7 +660,7 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
         });
         */
         // Schedule after 75ms
-        Blueberry.getUtil().getClientScheduler().runTaskLater(Objects.requireNonNull(Blueberry.getModLoader().getModById("multiversion")), 75, () -> {
+        Blueberry.getUtil().getClientScheduler().runTaskLaterAsynchronously(Objects.requireNonNull(Blueberry.getModLoader().getModById("multiversion")), 75, () -> {
             Minecraft mc = Minecraft.getInstance();
             //noinspection ConstantConditions
             if (mc != null) {
@@ -806,5 +730,258 @@ public class v1_18_2_To_v1_19 extends PacketRewriter {
 
     private static long randomLong() {
         return ThreadLocalRandom.current().nextLong();
+    }
+
+    private static class ChunkSection {
+        public static ChunkSection emptySection;
+        public static final int SIZE = 16 * 16 * 16;
+        public final short nonEmptyBlockCount;
+        public DataPalettes statesType;
+        public DataPalette states = null;
+        public DataPalettes biomesType;
+        public DataPalette biomes = null;
+
+        private ChunkSection(short nonEmptyBlockCount, int statesGlobalPaletteBits, int biomesGlobalPaletteBits) {
+            this.nonEmptyBlockCount = nonEmptyBlockCount;
+            this.statesType = new DataPalettes(DataPaletteType.STATES, statesGlobalPaletteBits);
+            this.biomesType = new DataPalettes(DataPaletteType.BIOMES, biomesGlobalPaletteBits);
+        }
+
+        @NotNull
+        public static ChunkSection readChunkSection(@NotNull PacketWrapper wrapper, int statesGlobalPaletteBits, int biomesGlobalPaletteBits) {
+            short nonEmptyBlockCount = wrapper.readShort();
+            return new ChunkSection(nonEmptyBlockCount, statesGlobalPaletteBits, biomesGlobalPaletteBits);
+        }
+    }
+
+    public enum DataPaletteType {
+        STATES(ChunkSection.SIZE, 8),
+        BIOMES(4 * 4 * 4, 2),
+        ;
+
+        private final int maxSize;
+        private final int highestBitsPerValue;
+
+        DataPaletteType(int maxSize, int highestBitsPerValue) {
+            this.maxSize = maxSize;
+            this.highestBitsPerValue = highestBitsPerValue;
+        }
+    }
+
+    public record DataPalettes(@NotNull DataPaletteType type, int globalPaletteBits) {
+        @NotNull
+        public DataPalette readPalette(@NotNull PacketWrapper wrapper) {
+            int bitsPerValue = wrapper.readByte();
+            int originalBitsPerValue = bitsPerValue;
+            if (bitsPerValue > type.highestBitsPerValue) {
+                bitsPerValue = globalPaletteBits;
+            }
+            DataPalette palette;
+            if (bitsPerValue == 0) {
+                palette = new DataPalette(1);
+                palette.addId(wrapper.readVarInt());
+                wrapper.readVarInt();
+                return palette;
+            }
+            if (bitsPerValue != globalPaletteBits) {
+                int paletteLength = wrapper.readVarInt();
+                palette = new DataPalette(paletteLength);
+                for (int i = 0; i < paletteLength; i++) {
+                    palette.addId(wrapper.readVarInt());
+                }
+            } else {
+                palette = new DataPalette();
+            }
+            long[] values = new long[wrapper.readVarInt()];
+            if (values.length > 0) {
+                char valuesPerLong = (char) (64 / bitsPerValue);
+                int expectedLength = (type.maxSize + valuesPerLong - 1) / valuesPerLong;
+                if (values.length != expectedLength) {
+                    throw new IllegalStateException("Palette data length (" + values.length + ") does not match expected length (" + expectedLength + ")! bitsPerValue=" + bitsPerValue + ", originalBitsPerValue=" + originalBitsPerValue);
+                }
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = wrapper.readLong();
+                }
+                CompactArrayUtil.iterateCompactArrayWithPadding(
+                        bitsPerValue,
+                        type.maxSize,
+                        values,
+                        bitsPerValue == globalPaletteBits ? palette::setIdAt : palette::setPaletteIndexAt
+                );
+            }
+            return palette;
+        }
+
+        public void writePalette(@NotNull PacketWrapper wrapper, @NotNull DataPalette palette) {
+            int bitsPerValue;
+            if (palette.size() > 1) {
+                bitsPerValue = type == DataPaletteType.STATES ? 4 : 1;
+                while (palette.size() > 1 << bitsPerValue) {
+                    bitsPerValue++;
+                }
+                if (bitsPerValue > type.highestBitsPerValue) {
+                    bitsPerValue = globalPaletteBits;
+                }
+            } else {
+                bitsPerValue = 0;
+            }
+            wrapper.writeByte(bitsPerValue);
+            if (bitsPerValue == 0) {
+                wrapper.writeVarInt(palette.idByIndex(0));
+                wrapper.writeVarInt(0);
+                return;
+            }
+            if (bitsPerValue != globalPaletteBits) {
+                wrapper.writeVarInt(palette.size());
+                for (int i = 0; i < palette.size(); i++) {
+                    wrapper.writeVarInt(palette.idByIndex(i));
+                }
+            }
+            long[] data = CompactArrayUtil.createCompactArrayWithPadding(
+                    bitsPerValue,
+                    type.maxSize,
+                    bitsPerValue == globalPaletteBits ? palette::idAt : palette::paletteIndexAt
+            );
+            wrapper.writeVarInt(data.length);
+            for (long l : data) {
+                wrapper.writeLong(l);
+            }
+        }
+    }
+
+    public static class DataPalette {
+        private final int[] values;
+        private final IntList palette;
+        private final Int2IntMap inversePalette;
+
+        public DataPalette() {
+            this.values = new int[ChunkSection.SIZE];
+            palette = new IntArrayList();
+            inversePalette = new Int2IntOpenHashMap();
+            inversePalette.defaultReturnValue(-1);
+        }
+
+        public DataPalette(int expectedSize) {
+            this.values = new int[ChunkSection.SIZE];
+            palette = new IntArrayList(expectedSize);
+            inversePalette = new Int2IntOpenHashMap(expectedSize);
+            inversePalette.defaultReturnValue(-1);
+        }
+
+        public int idAt(int sectionCoordinate) {
+            int index = values[sectionCoordinate];
+            return palette.getInt(index);
+        }
+
+        public int idAt(int secX, int secY, int secZ) {
+            return idAt(index(secX, secY, secZ));
+        }
+
+        public void setIdAt(int sectionCoordinate, int id) {
+            int index = inversePalette.get(id);
+            if (index == -1) {
+                index = palette.size();
+                palette.add(id);
+                inversePalette.put(id, index);
+            }
+            values[sectionCoordinate] = index;
+        }
+
+        public void setIdAt(int secX, int secY, int secZ, int id) {
+            setIdAt(index(secX, secY, secZ), id);
+        }
+
+        public int idByIndex(int index) {
+            return palette.getInt(index);
+        }
+
+        /*
+        public void setIdByIndex(int index, int id) {
+            int oldId = palette.set(index, id);
+            if (oldId == id) return;
+            inversePalette.put(id, index);
+            if (inversePalette.get(oldId) == index) {
+                inversePalette.remove(oldId);
+                for (int i = 0; i < palette.size(); i++) {
+                    if (palette.getInt(i) == oldId) {
+                        inversePalette.put(oldId, i);
+                        break;
+                    }
+                }
+            }
+        }
+        */
+
+        public int paletteIndexAt(int packedCoordinate) {
+            return values[packedCoordinate];
+        }
+
+        public void setPaletteIndexAt(int sectionCoordinate, int index) {
+            values[sectionCoordinate] = index;
+        }
+
+        public void addId(int id) {
+            inversePalette.put(id, palette.size());
+            palette.add(id);
+        }
+
+        /*
+        public void replaceId(int oldId, int newId) {
+            int index = inversePalette.remove(oldId);
+            if (index == -1) return;
+            inversePalette.put(newId, index);
+            for (int i = 0; i < palette.size(); i++) {
+                if (palette.getInt(i) == oldId) {
+                    palette.set(i, newId);
+                }
+            }
+        }
+        */
+
+        public int size() {
+            return palette.size();
+        }
+
+        public void setEntry(int index, int id) {
+            int oldId = palette.set(index, id);
+            if (oldId == id) return;
+            inversePalette.put(id, index);
+            if (inversePalette.get(oldId) == index) {
+                inversePalette.remove(oldId);
+                for (int i = 0; i < palette.size(); i++) {
+                    if (palette.getInt(i) == oldId) {
+                        inversePalette.put(oldId, i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        /*
+        public void replaceEntry(int oldId, int newId) {
+            final int index = inversePalette.remove(oldId);
+            if (index == -1) return;
+            inversePalette.put(newId, index);
+            for (int i = 0; i < palette.size(); i++) {
+                if (palette.getInt(i) == oldId) {
+                    palette.set(i, newId);
+                }
+            }
+        }
+        */
+
+        public void addEntry(int id) {
+            inversePalette.put(id, palette.size());
+            palette.add(id);
+        }
+
+        public void clear() {
+            palette.clear();
+            inversePalette.clear();
+        }
+
+        public static int index(int x, int y, int z) {
+            return y << 8 | z << 4 | x;
+        }
     }
 }
